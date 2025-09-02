@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embed • Cápsula</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}</style>
+</head>
+<body class="bg-white">
+  <div id="embedRoot" class="max-w-3xl mx-auto p-4">
+    <div id="card" class="border rounded-2xl p-5">
+      <div class="text-sm text-slate-600">Cápsula</div>
+      <h1 id="eTitle" class="text-2xl font-bold">Cargando...</h1>
+      <div id="eCofre" class="my-4 h-24 bg-gradient-to-r from-violet-100 to-indigo-100 rounded-xl flex items-center justify-center">
+        <span class="text-slate-700 text-sm">Sellada</span>
+      </div>
+      <div id="eCountdown" class="text-3xl font-black"></div>
+      <div id="eOpenWrap" class="mt-4 hidden">
+        <button id="eOpenBtn" class="px-4 py-2 rounded-xl bg-indigo-700 text-white">Abrir</button>
+      </div>
+      <div id="eContent" class="mt-4 hidden"></div>
+    </div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="./firebase-config.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id') || '';
+    let DB=null;
+    function initDB(){
+      try{
+        if(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey){
+          firebase.initializeApp(window.FIREBASE_CONFIG);
+          DB = firebase.database();
+        }
+      }catch(e){}
+    }
+    function fmt(t){const d=new Date(t);return d.toLocaleString();}
+    function tickCountdown(openAt){
+      function update(){
+        const now = Date.now();
+        const diff = Math.max(0, openAt - now);
+        const s = Math.floor(diff/1000);
+        const h = String(Math.floor(s/3600)).padStart(2,'0');
+        const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+        const ss = String(s%60).padStart(2,'0');
+        document.getElementById('eCountdown').textContent = `${h}:${m}:${ss}`;
+        if(diff<=0){
+          document.getElementById('eOpenWrap').classList.remove('hidden');
+          clearInterval(timer);
+        }
+      }
+      update();
+      const timer=setInterval(update,1000);
+    }
+    function render(c){
+      document.getElementById('eTitle').textContent = c.title || 'Cápsula';
+      tickCountdown(c.openAt);
+      document.getElementById('eOpenBtn').onclick = () => {
+        document.getElementById('eContent').classList.remove('hidden');
+        document.getElementById('eContent').innerHTML = `
+          <div class="p-3 bg-slate-50 rounded-xl">
+            <div class="text-slate-700 whitespace-pre-wrap">${(c.message||'')}</div>
+            ${(c.links||[]).map(u=>`<div class='mt-2'><a class='text-indigo-700 underline break-all' href='${u}' target='_blank'>Adjunto</a></div>`).join('')}
+          </div>`;
+      };
+    }
+    initDB();
+    if(DB && id){
+      DB.ref('capsules/'+id).get().then(snap=>{render(snap.val()||{});});
+    }else{
+      const all = JSON.parse(localStorage.getItem('cvf_capsules')||'[]');
+      const c = all.find(x=>x.id===id)||all[0]||{title:"Demo",openAt:Date.now()+60000,message:"Ejemplo."};
+      render(c);
+    }
+  </script>
+</body>
+</html>
