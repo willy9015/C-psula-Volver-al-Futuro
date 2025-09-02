@@ -1,80 +1,470 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Embed • Cápsula</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cápsula del Tiempo - Vista Embed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        },
+                        secondary: {
+                            50: '#faf5ff',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7e22ce'
+                        },
+                        accent: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            opacity: 0;
+            z-index: 50;
+        }
+        
+        @keyframes fall {
+            0% { 
+                top: -20px; 
+                opacity: 1;
+                transform: translateX(0) rotate(0deg);
+            }
+            100% { 
+                top: 100vh; 
+                opacity: 0;
+                transform: translateX(20px) rotate(360deg);
+            }
+        }
+        
+        .countdown-digit {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .message-reveal {
+            animation: messageReveal 1.5s ease-out forwards;
+        }
+        
+        @keyframes messageReveal {
+            0% { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
-<body class="bg-white">
-  <div id="embedRoot" class="max-w-3xl mx-auto p-4">
-    <div id="card" class="border rounded-2xl p-5">
-      <div class="text-sm text-slate-600">Cápsula</div>
-      <h1 id="eTitle" class="text-2xl font-bold">Cargando...</h1>
-      <div id="eCofre" class="my-4 h-24 bg-gradient-to-r from-violet-100 to-indigo-100 rounded-xl flex items-center justify-center">
-        <span class="text-slate-700 text-sm">Sellada</span>
-      </div>
-      <div id="eCountdown" class="text-3xl font-black"></div>
-      <div id="eOpenWrap" class="mt-4 hidden">
-        <button id="eOpenBtn" class="px-4 py-2 rounded-xl bg-indigo-700 text-white">Abrir</button>
-      </div>
-      <div id="eContent" class="mt-4 hidden"></div>
+<body class="p-4">
+    <div class="w-full max-w-md mx-auto">
+        <div id="capsuleContainer" class="glass-container text-white p-8 relative overflow-hidden">
+            <!-- Background pattern -->
+            <div class="absolute inset-0 opacity-10 z-0">
+                <div class="absolute top-0 left-0 right-0 h-px bg-white"></div>
+                <div class="absolute top-1/4 left-0 right-0 h-px bg-white"></div>
+                <div class="absolute top-2/4 left-0 right-0 h-px bg-white"></div>
+                <div class="absolute top-3/4 left-0 right-0 h-px bg-white"></div>
+                <div class="absolute left-0 top-0 bottom-0 w-px bg-white"></div>
+                <div class="absolute left-1/4 top-0 bottom-0 w-px bg-white"></div>
+                <div class="absolute left-2/4 top-0 bottom-0 w-px bg-white"></div>
+                <div class="absolute left-3/4 top-0 bottom-0 w-px bg-white"></div>
+            </div>
+            
+            <div class="relative z-10 text-center">
+                <!-- Logo/Header -->
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold mb-1">Cápsula del Tiempo</h1>
+                    <p class="text-sm opacity-80">Mensaje del futuro</p>
+                </div>
+                
+                <!-- Loading state -->
+                <div id="loadingState" class="py-8">
+                    <div class="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        <span>Cargando cápsula...</span>
+                    </div>
+                </div>
+                
+                <!-- Countdown state -->
+                <div id="countdownState" class="hidden">
+                    <div class="mb-6">
+                        <h2 id="countdownTitle" class="text-xl font-semibold mb-4"></h2>
+                        
+                        <!-- Circular progress -->
+                        <div class="relative mx-auto mb-6 w-32 h-32">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-white text-opacity-20" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                                <circle class="progress-ring__circle text-white" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"
+                                    stroke-dasharray="251.2"
+                                    stroke-dashoffset="251.2" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div id="countdownDigit" class="text-2xl font-bold">00:00:00</div>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm opacity-80">Esta cápsula se revelará en:</p>
+                        <div class="flex justify-center space-x-2 mt-4">
+                            <div class="countdown-digit">
+                                <div id="days" class="text-2xl font-bold">00</div>
+                                <div class="text-xs opacity-80">días</div>
+                            </div>
+                            <div class="countdown-digit">
+                                <div id="hours" class="text-2xl font-bold">00</div>
+                                <div class="text-xs opacity-80">horas</div>
+                            </div>
+                            <div class="countdown-digit">
+                                <div id="minutes" class="text-2xl font-bold">00</div>
+                                <div class="text-xs opacity-80">min</div>
+                            </div>
+                            <div class="countdown-digit">
+                                <div id="seconds" class="text-2xl font-bold">00</div>
+                                <div class="text-xs opacity-80">seg</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-xs opacity-60">
+                        <p>Compartido por <span id="creatorName" class="font-medium"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Message state -->
+                <div id="messageState" class="hidden message-reveal">
+                    <div class="mb-6">
+                        <div class="inline-block p-3 bg-white bg-opacity-10 rounded-full mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h2 id="messageTitle" class="text-xl font-semibold mb-2"></h2>
+                        <div id="messageContent" class="text-left bg-white bg-opacity-10 rounded-xl p-4 whitespace-pre-line"></div>
+                    </div>
+                    
+                    <div class="text-xs opacity-60">
+                        <p>Revelado el <span id="revealDate" class="font-medium"></span></p>
+                        <p class="mt-1">Compartido por <span id="messageCreator" class="font-medium"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Error state -->
+                <div id="errorState" class="hidden py-8">
+                    <div class="inline-flex items-center px-4 py-2 bg-red-500 bg-opacity-20 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span id="errorMessage">Cápsula no encontrada</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Branding -->
+        <div class="text-center mt-4 text-white text-opacity-60 text-sm">
+            <p>Creado con <a href="index.html" class="underline hover:text-opacity-100">Cápsula del Tiempo</a></p>
+        </div>
     </div>
-  </div>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-  <script src="./firebase-config.js"></script>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const id = params.get('id') || '';
-    let DB=null;
-    function initDB(){
-      try{
-        if(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey){
-          firebase.initializeApp(window.FIREBASE_CONFIG);
-          DB = firebase.database();
-        }
-      }catch(e){}
-    }
-    function fmt(t){const d=new Date(t);return d.toLocaleString();}
-    function tickCountdown(openAt){
-      function update(){
-        const now = Date.now();
-        const diff = Math.max(0, openAt - now);
-        const s = Math.floor(diff/1000);
-        const h = String(Math.floor(s/3600)).padStart(2,'0');
-        const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-        const ss = String(s%60).padStart(2,'0');
-        document.getElementById('eCountdown').textContent = `${h}:${m}:${ss}`;
-        if(diff<=0){
-          document.getElementById('eOpenWrap').classList.remove('hidden');
-          clearInterval(timer);
-        }
-      }
-      update();
-      const timer=setInterval(update,1000);
-    }
-    function render(c){
-      document.getElementById('eTitle').textContent = c.title || 'Cápsula';
-      tickCountdown(c.openAt);
-      document.getElementById('eOpenBtn').onclick = () => {
-        document.getElementById('eContent').classList.remove('hidden');
-        document.getElementById('eContent').innerHTML = `
-          <div class="p-3 bg-slate-50 rounded-xl">
-            <div class="text-slate-700 whitespace-pre-wrap">${(c.message||'')}</div>
-            ${(c.links||[]).map(u=>`<div class='mt-2'><a class='text-indigo-700 underline break-all' href='${u}' target='_blank'>Adjunto</a></div>`).join('')}
-          </div>`;
-      };
-    }
-    initDB();
-    if(DB && id){
-      DB.ref('capsules/'+id).get().then(snap=>{render(snap.val()||{});});
-    }else{
-      const all = JSON.parse(localStorage.getItem('cvf_capsules')||'[]');
-      const c = all.find(x=>x.id===id)||all[0]||{title:"Demo",openAt:Date.now()+60000,message:"Ejemplo."};
-      render(c);
-    }
-  </script>
+
+    <!-- Confetti Container -->
+    <div id="confettiContainer" class="fixed inset-0 pointer-events-none z-50 overflow-hidden hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const loadingState = document.getElementById('loadingState');
+            const countdownState = document.getElementById('countdownState');
+            const messageState = document.getElementById('messageState');
+            const errorState = document.getElementById('errorState');
+            const errorMessage = document.getElementById('errorMessage');
+            const countdownTitle = document.getElementById('countdownTitle');
+            const countdownDigit = document.getElementById('countdownDigit');
+            const daysElement = document.getElementById('days');
+            const hoursElement = document.getElementById('hours');
+            const minutesElement = document.getElementById('minutes');
+            const secondsElement = document.getElementById('seconds');
+            const messageTitle = document.getElementById('messageTitle');
+            const messageContent = document.getElementById('messageContent');
+            const revealDate = document.getElementById('revealDate');
+            const creatorName = document.getElementById('creatorName');
+            const messageCreator = document.getElementById('messageCreator');
+            const confettiContainer = document.getElementById('confettiContainer');
+            const progressCircle = document.querySelector('.progress-ring__circle');
+            
+            // Set circle progress
+            if (progressCircle) {
+                const radius = progressCircle.r.baseVal.value;
+                const circumference = radius * 2 * Math.PI;
+                progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+                progressCircle.style.strokeDashoffset = `${circumference}`;
+            }
+            
+            // Get capsule ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const capsuleId = urlParams.get('capsule');
+            
+            // Create confetti effect
+            function createConfetti() {
+                confettiContainer.classList.remove('hidden');
+                confettiContainer.innerHTML = '';
+                
+                const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
+                
+                for (let i = 0; i < 80; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                    confetti.style.width = `${Math.random() * 12 + 5}px`;
+                    confetti.style.height = `${Math.random() * 12 + 5}px`;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    
+                    confettiContainer.appendChild(confetti);
+                }
+                
+                setTimeout(() => {
+                    confettiContainer.classList.add('hidden');
+                }, 5000);
+            }
+            
+            // Format date
+            function formatDate(dateString) {
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return new Date(dateString).toLocaleDateString('es-ES', options);
+            }
+            
+            // Set progress circle
+            function setProgress(percent) {
+                if (!progressCircle) return;
+                
+                const radius = progressCircle.r.baseVal.value;
+                const circumference = radius * 2 * Math.PI;
+                const offset = circumference - (percent / 100) * circumference;
+                
+                progressCircle.style.strokeDashoffset = offset;
+            }
+            
+            // Update countdown display
+            function updateCountdown(futureDate) {
+                const now = new Date();
+                const future = new Date(futureDate);
+                const diff = future - now;
+                
+                if (diff <= 0) {
+                    return { expired: true };
+                }
+                
+                // Calculate time components
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                // Calculate percentage for progress circle
+                const totalHours = days * 24 + hours + (minutes / 60) + (seconds / 3600);
+                let percent = 100;
+                
+                if (days > 30) {
+                    percent = 100 - ((days - 30) * 100 / 335); // Up to 365 days
+                } else if (days > 0) {
+                    percent = 100 - (days * 100 / 30);
+                } else if (hours > 0) {
+                    percent = 100 - (hours * 100 / 24);
+                } else {
+                    percent = 100 - (minutes * 100 / 60);
+                }
+                
+                percent = Math.max(0, Math.min(100, percent));
+                setProgress(percent);
+                
+                // Update display
+                daysElement.textContent = days.toString().padStart(2, '0');
+                hoursElement.textContent = hours.toString().padStart(2, '0');
+                minutesElement.textContent = minutes.toString().padStart(2, '0');
+                secondsElement.textContent = seconds.toString().padStart(2, '0');
+                
+                countdownDigit.textContent = `${days}d ${hours}h ${minutes}m`;
+                
+                return { 
+                    expired: false,
+                    days,
+                    hours,
+                    minutes,
+                    seconds
+                };
+            }
+            
+            // Show message
+            function showMessage(capsule) {
+                loadingState.classList.add('hidden');
+                countdownState.classList.add('hidden');
+                errorState.classList.add('hidden');
+                messageState.classList.remove('hidden');
+                
+                messageTitle.textContent = capsule.title;
+                messageContent.textContent = capsule.message;
+                revealDate.textContent = formatDate(new Date().toISOString());
+                messageCreator.textContent = capsule.creator || 'Anónimo';
+                
+                // Show confetti
+                createConfetti();
+            }
+            
+            // Show countdown
+            function showCountdown(capsule) {
+                loadingState.classList.add('hidden');
+                messageState.classList.add('hidden');
+                errorState.classList.add('hidden');
+                countdownState.classList.remove('hidden');
+                
+                countdownTitle.textContent = capsule.title;
+                creatorName.textContent = capsule.creator || 'Anónimo';
+                
+                // Initial update
+                const countdown = updateCountdown(capsule.futureDate);
+                
+                if (countdown.expired) {
+                    showMessage(capsule);
+                    return;
+                }
+                
+                // Set up interval for updates
+                const countdownInterval = setInterval(() => {
+                    const countdown = updateCountdown(capsule.futureDate);
+                    
+                    if (countdown.expired) {
+                        clearInterval(countdownInterval);
+                        showMessage(capsule);
+                        
+                        // Notify parent window if embedded
+                        if (window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'TIME_CAPSULE_REVEALED',
+                                capsuleId: capsule.id
+                            }, '*');
+                        }
+                    }
+                }, 1000);
+            }
+            
+            // Show error
+            function showError(message) {
+                loadingState.classList.add('hidden');
+                countdownState.classList.add('hidden');
+                messageState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                
+                errorMessage.textContent = message;
+            }
+            
+            // Load capsule data
+            function loadCapsule() {
+                if (!capsuleId) {
+                    showError('No se proporcionó ID de cápsula');
+                    return;
+                }
+                
+                // In a real implementation, you would fetch from an API or database
+                // For demo purposes, we're using localStorage
+                try {
+                    const capsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
+                    const capsule = capsules.find(c => c.id === capsuleId);
+                    
+                    if (!capsule) {
+                        showError('Cápsula no encontrada');
+                        return;
+                    }
+                    
+                    // Check if it's time to reveal
+                    const now = new Date();
+                    const revealDate = new Date(capsule.futureDate);
+                    
+                    if (now >= revealDate) {
+                        showMessage(capsule);
+                    } else {
+                        showCountdown(capsule);
+                    }
+                } catch (error) {
+                    console.error('Error loading capsule:', error);
+                    showError('Error al cargar la cápsula');
+                }
+            }
+            
+            // Listen for storage events (for updates from parent window)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'timeCapsules') {
+                    loadCapsule();
+                }
+            });
+            
+            // Listen for messages from parent window
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'REQUEST_CAPSULE_UPDATE') {
+                    loadCapsule();
+                }
+            });
+            
+            // Initial load
+            setTimeout(loadCapsule, 800); // Simulate loading delay for demo
+        });
+    </script>
 </body>
 </html>
