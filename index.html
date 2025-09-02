@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cápsula Volver al Futuro</title>
+  <meta name="description" content="Guarda mensajes, fotos, audios o videos y ábrelos en el futuro. Comparte por QR/enlace o programa entrega por email/WhatsApp.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .card { border-radius: 1.25rem; box-shadow: 0 12px 30px rgba(0,0,0,.08); }
+    .glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); }
+    .cofre { width: 220px; height: 130px; position: relative; margin: 0 auto; perspective: 800px; }
+    .cofre .base { position:absolute; left:0; right:0; bottom:0; height:70%; background:#3b2f2f; border-radius:0 0 16px 16px; box-shadow: inset 0 8px 0 #2b1f1f; }
+    .cofre .tapa { position:absolute; left:0; right:0; top:0; height:60%; background:#6b4f4f; border-radius:16px 16px 8px 8px; transform-origin: top center; transition: transform .9s cubic-bezier(.2,.8,.2,1); box-shadow: inset 0 -8px 0 #553c3c; transform: rotateX(0deg); }
+    .cofre.open .tapa { transform: rotateX(72deg); }
+    .tapa:after, .base:after { content:""; position:absolute; left:0; right:0; height:8px; background:#d4af37; }
+    .tapa:after { bottom:-4px; }
+    .base:after { top:-4px; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-violet-50 to-fuchsia-100 min-h-screen">
+  <header class="p-4 md:p-6">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <h1 class="text-2xl md:text-3xl font-extrabold"><span class="text-violet-700">Cápsula</span> <span class="text-indigo-700">Volver al Futuro</span></h1>
+      <nav class="flex gap-2">
+        <a href="#crear" class="px-3 py-2 rounded-xl bg-white/80 hover:bg-white card">Crear</a>
+        <a href="#mis" class="px-3 py-2 rounded-xl bg-white/80 hover:bg-white card">Mis cápsulas</a>
+        <a href="#docs" class="px-3 py-2 rounded-xl bg-white/80 hover:bg-white card">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-10">
+    <section class="grid md:grid-cols-2 gap-6 items-center">
+      <div class="card glass p-6">
+        <h2 class="text-2xl md:text-3xl font-bold mb-2">Guarda hoy. Descubre mañana.</h2>
+        <p class="text-slate-700">Crea una cápsula con texto, fotos, audio o video y elegí cuándo se abre. Compartí por <b>QR o enlace (incluido en el plan mensual)</b> o programá entrega por <b>Email/WhatsApp (USD 1 por envío)</b>.</p>
+      </div>
+      <div class="card bg-white p-6 text-center">
+        <div id="cofreHero" class="cofre mx-auto mb-4">
+          <div class="tapa"></div><div class="base"></div>
+        </div>
+        <div id="countHero" class="text-3xl font-black text-slate-800">00:00:00</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
+  <script src="./firebase-config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
