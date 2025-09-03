@@ -1,168 +1,103 @@
 <!doctype html>
 <html lang="es" data-theme="auto">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cápsula Volver al Futuro — Futurista PRO</title>
-  <meta name="description" content="Crea cápsulas con fecha y PIN. Comparte por Link/QR/WhatsApp. Programa envíos a Telegram/Email/WhatsApp. Diseño futurista." />
-  <meta name="theme-color" content="#0ea5e9" />
+  <meta name="theme-color" content="#0ea5e9">
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- Libs -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- Firebase compat (opcional; completa en PASO 2) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-  <script>
-    // 👇 Completá con tus claves cuando hagamos Firebase (PASO 2)
-    const firebaseConfig = {
-      apiKey: "",
-      authDomain: "",
-      projectId: "",
-      storageBucket: "",
-      messagingSenderId: "",
-      appId: ""
-    };
-    if (firebaseConfig.apiKey) {
-      firebase.initializeApp(firebaseConfig);
-      window.auth = firebase.auth();
-      window.storage = firebase.storage();
-    } else {
-      window.auth = null; window.storage = null;
-    }
-  </script>
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Orbitron:wght@600;800&display=swap" rel="stylesheet"/>
-
   <style>
     :root{
-      /* Oscuro */
-      --bg1:#0b1220; --bg2:#0f172a;
-      --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.02);
-      --glassS:#ffffff18; --border:rgba(255,255,255,.14);
-      --fg:#e5e7eb; --muted:#cbd5e1; --muted2:#94a3b8;
+      --bg1:#0b1220; --bg2:#0f172a; --fg:#e5e7eb; --muted:#94a3b8;
+      --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.02); --border:rgba(255,255,255,.14);
       --glow1:#22d3ee; --glow2:#a78bfa; --accent:#22d3ee;
+      --bg-photo:url('grok_image_qtfpp7.jpg');
     }
-    /* Claro con contraste REAL (inputs blancos, textos oscuros) */
     [data-theme="light"]{
-      --bg1:#f1f5f9; --bg2:#e2e8f0;
-      --panel:#ffffffE6; --panel2:#ffffffF5;
-      --glassS:#00000012; --border:rgba(0,0,0,.14);
-      --fg:#0f172a; --muted:#334155; --muted2:#475569;
+      --bg1:#eef2f7; --bg2:#e7ecf5; --fg:#0f172a; --muted:#475569;
+      --panel:#ffffffE6; --panel2:#ffffffF8; --border:rgba(0,0,0,.12);
       --glow1:#0ea5e9; --glow2:#6366f1; --accent:#0ea5e9;
     }
     html,body{height:100%}
     body{
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background: radial-gradient(90vmax 60vmax at 10% 10%, #111827 0%, var(--bg1) 36%, var(--bg2) 100%);
-      color:var(--fg);
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; color:var(--fg);
+      background: linear-gradient(135deg,var(--bg1),var(--bg2)); position:relative; overflow-x:hidden;
     }
-    .brand{font-family:Orbitron,Inter,sans-serif;letter-spacing:.4px}
-    .glass{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);backdrop-filter:blur(10px)}
-    .card{border-radius:1.25rem;box-shadow:0 16px 40px rgba(0,0,0,.18)}
-    .btn{border-radius:.9rem;padding:.7rem 1rem;border:1px solid var(--glassS);transition:transform .08s ease,filter .2s}
-    .btn:active{transform:translateY(1px) scale(.99)}
-    .btn-primary{background:linear-gradient(90deg,var(--glow1),var(--glow2));color:#0b1220;font-weight:800}
-    .btn-ghost{background:rgba(255,255,255,.06);color:var(--fg)}
-    .btn-outline{background:transparent;border:1px solid var(--border)}
-    .label{font-size:.85rem;font-weight:600;color:var(--muted)}
-    .input,.textarea,select{
-      width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.9rem;padding:.8rem;color:var(--fg)
+    /* Fondo con tu imagen difuminada */
+    body::before{
+      content:""; position:fixed; inset:0; z-index:-2;
+      background-image:var(--bg-photo); background-size:180% auto; background-repeat:no-repeat; background-position:20% 10%;
+      filter:blur(12px) saturate(1.1) brightness(0.55); transform:scale(1.05);
     }
-    [data-theme="light"] .input,[data-theme="light"] .textarea,[data-theme="light"] select{ background:#ffffff; color:#0f172a }
-    .input::placeholder,.textarea::placeholder{color:var(--muted2)}
-    .pill{font-size:.72rem;background:rgba(255,255,255,.06);color:var(--muted);padding:.25rem .6rem;border-radius:999px;border:1px solid var(--border)}
-    .badge{font-size:.72rem;background:linear-gradient(90deg,rgba(34,211,238,.15),rgba(167,139,250,.15));color:#22d3ee;padding:.25rem .6rem;border:1px solid rgba(34,211,238,.3);border-radius:999px}
-    .kbd{font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;background:#111827;border:1px solid #374151;padding:.15rem .4rem;border-radius:.375rem;font-size:.75rem}
-    .toast{position:fixed;bottom:18px;right:18px;z-index:1000;display:grid;gap:8px}
+    [data-theme="light"] body::before{ filter: blur(8px) saturate(1.05) brightness(0.94); }
+    body::after{ content:""; position:fixed; inset:0; z-index:-1;
+      background:radial-gradient(60% 60% at 15% 10%,rgba(0,0,0,.25),rgba(0,0,0,.6)); }
+    [data-theme="light"] body::after{
+      background:radial-gradient(60% 60% at 15% 10%,rgba(255,255,255,.25),rgba(255,255,255,.7));
+    }
 
-    /* Cofre SVG contenedor */
-    .chestWrap{width:320px;margin:0 auto}
-    .star{cursor:pointer;font-size:22px;user-select:none}
-    .star.on{color:#facc15}
+    .glass{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--border); backdrop-filter:blur(10px)}
+    .card{border-radius:1.2rem; box-shadow:0 16px 40px rgba(0,0,0,.18)}
+    .btn{border-radius:.9rem; padding:.7rem 1rem; border:1px solid var(--border); transition:transform .08s ease}
+    .btn:active{transform:translateY(1px) scale(.99)}
+    .btn-primary{background:linear-gradient(90deg,var(--glow1),var(--glow2)); color:#0b1220; font-weight:800}
+    .input,.textarea,select{width:100%; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:.9rem; padding:.8rem; color:var(--fg)}
+    [data-theme="light"] .input,[data-theme="light"] .textarea,[data-theme="light"] select{ background:#fff; color:#0f172a }
+    .pill{font-size:.72rem; background:rgba(255,255,255,.06); color:var(--muted); padding:.25rem .6rem; border-radius:999px; border:1px solid var(--border)}
+    .toast{position:fixed; bottom:18px; right:18px; z-index:9999; display:grid; gap:8px}
+    .hidden{display:none}
+
+    /* Cofre 3D simple */
+    .cofre{width:280px;height:165px;position:relative;margin:0 auto;filter:drop-shadow(0 10px 25px rgba(34,211,238,.25))}
+    .cofre .base{position:absolute;inset:auto 0 0 0;height:70%;background:linear-gradient(180deg,#8b5e34,#b08968);border-radius:0 0 16px 16px;box-shadow:inset 0 10px 0 rgba(0,0,0,.25)}
+    .cofre .tapa{position:absolute;inset:0 0 auto 0;height:60%;background:linear-gradient(180deg,#deb887,#a67c52);border-radius:16px 16px 10px 10px;transform-origin:top center;transition:transform .9s cubic-bezier(.2,.8,.2,1);box-shadow:inset 0 -10px 0 rgba(0,0,0,.25)}
+    .cofre.open .tapa{transform:rotateX(72deg)}
   </style>
 </head>
 <body>
   <!-- NAV -->
-  <header class="sticky top-0 z-40 backdrop-blur border-b" style="background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.35));border-color:var(--border)">
+  <header class="sticky top-0 z-40 backdrop-blur border-b" style="border-color:var(--border); background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.35))">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-      <a href="#crear" class="brand text-2xl font-extrabold tracking-tight">
-        <span class="text-cyan-300">Cápsula</span> <span class="text-indigo-300">Volver al Futuro</span>
+      <a href="#crear" class="flex items-center gap-3">
+        <img src="grok_image_qtfpp7.jpg" alt="Logo" class="w-9 h-9 rounded-full object-cover border" style="border-color:var(--border)">
+        <span class="font-extrabold text-xl">Cápsula Volver al Futuro</span>
       </a>
       <div class="flex items-center gap-2">
-        <select id="langSel" class="input !py-2 !px-3" style="width:auto">
-          <option value="es">ES</option><option value="en">EN</option>
-        </select>
-        <select id="themeSel" class="input !py-2 !px-3" style="width:auto">
-          <option value="auto">Auto</option><option value="light">Claro</option><option value="dark">Oscuro</option>
-        </select>
-        <nav class="hidden md:flex gap-2">
-          <a href="#crear" class="btn btn-outline">Crear</a>
-          <a href="#mis" class="btn btn-outline">Mis cápsulas</a>
-          <a href="#social" class="btn btn-outline">Social</a>
-          <a href="#ayuda" class="btn btn-outline">Ayuda</a>
-        </nav>
-        <a href="#crear" class="md:hidden btn btn-primary">Crear</a>
+        <select id="langSel" class="input !py-2 !px-3" style="width:auto"><option value="es">ES</option><option value="en">EN</option></select>
+        <select id="themeSel" class="input !py-2 !px-3" style="width:auto"><option value="auto">Auto</option><option value="light">Claro</option><option value="dark">Oscuro</option></select>
+        <a href="#crear" class="btn btn-primary">Crear</a>
       </div>
     </div>
   </header>
 
-  <!-- HERO futurista -->
+  <!-- HERO -->
   <section class="max-w-6xl mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-6 items-center">
     <div class="glass card p-6 md:p-8">
-      <div class="badge mb-2">Futurista • ES/EN • UX PRO</div>
-      <h1 class="brand text-3xl md:text-4xl font-extrabold leading-tight mb-2">Guarda hoy. Descubre mañana.</h1>
-      <p class="opacity-90">Crea cápsulas con <b>título</b>, <b>mensaje</b>, <b>fecha</b>, <b>PIN</b> y <b>adjuntos/links</b>. Compartí por <b>link</b>, <b>QR</b> o <b>WhatsApp</b>. Programá envíos a <b>Telegram/Email/WhatsApp</b>.</p>
-      <div class="flex gap-3 mt-5">
-        <a href="#crear" class="btn btn-primary">Crear cápsula</a>
-        <a href="#mis" class="btn btn-ghost">Ver mis cápsulas</a>
-      </div>
-      <!-- Imágenes: máquinas del futuro/cofre retro-tech -->
-      <div class="mt-4 grid grid-cols-2 gap-3">
-        <img alt="futuristic time machine" class="rounded-xl border" style="border-color:var(--border)" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200&auto=format&fit=crop"/>
-        <img alt="retro tech chest" class="rounded-xl border" style="border-color:var(--border)" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop"/>
+      <div class="pill mb-2">E2EE • QR • WhatsApp • Telegram • Geo-Unlock</div>
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-2" data-i18n="title">Guarda hoy. Descubre mañana.</h1>
+      <p class="opacity-90" data-i18n="subtitle">Cápsulas con cifrado de extremo a extremo, apertura por fecha y (opcional) ubicación. Comparte por enlace, QR, WhatsApp o Telegram.</p>
+      <div class="mt-4 rounded-2xl overflow-hidden border" style="border-color:var(--border)">
+        <img src="grok_image_qtfpp7.jpg" alt="Key / fondo" class="w-full h-56 md:h-72 object-cover">
       </div>
     </div>
-
-    <!-- Cofre SVG realista con glow -->
-    <div class="glass card p-6 md:p-8 text-center relative overflow-hidden">
-      <div class="chestWrap" id="cofreHero">
-        <svg id="chestSVGHero" viewBox="0 0 360 240" class="w-full">
-          <defs>
-            <linearGradient id="wood" x1="0" x2="1"><stop offset="0%" stop-color="#8B5A2B"/><stop offset="100%" stop-color="#5C3A1A"/></linearGradient>
-            <linearGradient id="metal" x1="0" x2="1"><stop offset="0%" stop-color="#C0C8D0"/><stop offset="100%" stop-color="#8796A4"/></linearGradient>
-            <radialGradient id="glow" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#a78bfa" stop-opacity="0.9"/><stop offset="60%" stop-color="#22d3ee" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent" stop-opacity="0"/></radialGradient>
-            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.35"/></filter>
-          </defs>
-          <ellipse cx="180" cy="210" rx="120" ry="20" fill="#000" opacity="0.35"/>
-          <g filter="url(#shadow)">
-            <rect x="50" y="120" width="260" height="90" rx="12" fill="url(#wood)"/>
-            <rect x="50" y="120" width="260" height="90" rx="12" fill="url(#metal)" opacity="0.08"/>
-            <rect x="50" y="150" width="260" height="12" fill="url(#metal)" opacity="0.6"/>
-            <rect x="90" y="120" width="12" height="90" fill="url(#metal)"/>
-            <rect x="258" y="120" width="12" height="90" fill="url(#metal)"/>
-            <rect x="170" y="145" width="20" height="50" rx="4" fill="url(#metal)"/>
-            <circle cx="180" cy="165" r="5" fill="#2a3340"/>
-          </g>
-          <g id="lidHero" transform-origin="180px 120px">
-            <path d="M50,120 Q180,35 310,120 L310,130 L50,130 Z" fill="url(#wood)"/>
-            <path d="M50,120 Q180,35 310,120 L310,130 L50,130 Z" fill="url(#metal)" opacity="0.12"/>
-            <rect x="90" y="118" width="12" height="14" fill="url(#metal)"/>
-            <rect x="258" y="118" width="12" height="14" fill="url(#metal)"/>
-            <ellipse id="glowHero" cx="180" cy="130" rx="100" ry="24" fill="url(#glow)" opacity="0"/>
-          </g>
-        </svg>
+    <div class="glass card p-6 md:p-8">
+      <h3 class="font-extrabold mb-3 text-cyan-200">Ideas virales (1-tap)</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <button class="btn" data-preset="birthday">🎂 Cumple programado</button>
+        <button class="btn" data-preset="premiere">🎬 Estreno YouTube</button>
+        <button class="btn" data-preset="course">📚 Curso drip</button>
+        <button class="btn" data-preset="gift">🎁 Regalo del creador</button>
       </div>
-      <div id="countHero" class="brand text-3xl font-extrabold text-cyan-200">00:00:00</div>
-      <div class="text-sm opacity-80 mt-1">Demo</div>
+      <div class="mt-6 text-center">
+        <div id="countHero" class="text-4xl font-extrabold text-cyan-200">00:00:00</div>
+        <div class="text-xs opacity-70">Demo de cuenta regresiva</div>
+      </div>
     </div>
   </section>
 
@@ -170,133 +105,109 @@
   <main class="max-w-6xl mx-auto p-4 md:p-8 grid gap-6">
     <!-- Crear -->
     <section id="crear" class="glass card p-6 md:p-8">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="brand text-2xl font-extrabold">Crear nueva cápsula</h2>
-        <div class="flex gap-2">
-          <button id="btnExport" class="btn btn-ghost" title="Exportar backup">Exportar</button>
-          <label class="btn btn-ghost cursor-pointer" title="Importar backup"><span>Importar</span><input id="importFile" type="file" accept="application/json" class="hidden"></label>
-        </div>
-      </div>
+      <h2 class="text-2xl font-extrabold mb-4">Crear nueva cápsula</h2>
       <div class="grid md:grid-cols-2 gap-8">
         <div class="space-y-4">
-          <div><label class="label">Título *</label><input id="capTitle" class="input" placeholder="Ej: Carta al yo del futuro"></div>
-          <div><label class="label">Mensaje *</label><textarea id="capMessage" class="textarea h-40" placeholder="Escribe tu mensaje (texto)."></textarea></div>
+          <div><label class="text-sm opacity-80">Título *</label><input id="capTitle" class="input" placeholder="Ej: Carta al yo del futuro"></div>
+          <div><label class="text-sm opacity-80">Mensaje *</label><textarea id="capMessage" class="textarea h-40" placeholder="Escribe tu mensaje"></textarea></div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="label">Fecha y hora *</label><input id="capOpen" type="datetime-local" class="input"></div>
-            <div><label class="label">PIN (opcional)</label><input id="capPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="4–6"></div>
+            <div><label class="text-sm opacity-80">Fecha y hora *</label><input id="capOpen" type="datetime-local" class="input"></div>
+            <div><label class="text-sm opacity-80">PIN (si elegís Modo PIN)</label><input id="capPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="4–6"></div>
           </div>
+
+          <!-- Seguridad -->
+          <div class="grid md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm opacity-80">Seguridad</label>
+              <select id="secMode" class="input">
+                <option value="link">Link secreto (clave en #k=)</option>
+                <option value="pin">PIN (deriva la clave del PIN)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm opacity-80">Geo-unlock (opcional)</label>
+              <div class="flex gap-2">
+                <input id="geoRadius" class="input" inputmode="numeric" placeholder="Radio en metros">
+                <button id="geoMark" class="btn">Marcar ubicación</button>
+              </div>
+              <div id="geoHint" class="text-xs opacity-70 mt-1"></div>
+            </div>
+          </div>
+
+          <!-- Adjuntos por URL -->
           <div>
-            <label class="label">Adjuntos (enlaces, opcional)</label>
+            <label class="text-sm opacity-80">Adjuntos por URL (YouTube/Drive/Imagen/Video)</label>
             <input id="capLinks" class="input" placeholder="URL 1, URL 2, ...">
-            <p class="text-xs opacity-70 mt-1">YouTube / Drive / Dropbox / S3. (Subida directa se activa con Firebase)</p>
           </div>
-          <div><label class="label">URL de regalo (opcional)</label><input id="capGift" class="input" placeholder="Link a PDF/landing/cupón"></div>
+
           <div class="flex gap-3 pt-2">
             <button id="btnCreate" class="btn btn-primary">Guardar cápsula</button>
-            <button id="btnPreview" class="btn btn-ghost">Previsualizar</button>
+            <button id="btnPreview" class="btn">Previsualizar</button>
           </div>
-          <p class="text-xs opacity-70">* Campos obligatorios.</p>
+          <p class="text-xs opacity-70">* Campos obligatorios. Sin backend: los datos viajan en el enlace cifrados.</p>
         </div>
 
         <div class="space-y-4">
-          <!-- Compartir -->
           <div class="p-4 glass card">
-            <h3 class="brand font-extrabold mb-3 text-cyan-200">Compartir</h3>
+            <h3 class="font-extrabold mb-3 text-cyan-200">Compartir</h3>
             <div>
-              <div class="label mb-1">QR del enlace</div>
+              <div class="text-sm opacity-80 mb-1">QR del enlace</div>
               <div id="qrPreview" class="flex items-center justify-center p-4 rounded-xl border" style="background:var(--panel);border-color:var(--border)"></div>
             </div>
             <div class="mt-3">
-              <label class="label mb-1">Enlace para compartir</label>
+              <label class="text-sm opacity-80 mb-1">Enlace</label>
               <div class="flex gap-2">
                 <input id="shareLink" class="input flex-1" readonly placeholder="Se completa al guardar">
-                <button id="copyLinkBtn" class="btn btn-ghost">Copiar</button>
+                <button id="copyLinkBtn" class="btn">Copiar</button>
               </div>
             </div>
-            <div class="mt-3">
-              <label class="label mb-1">Mensaje (para WhatsApp)</label>
-              <textarea id="shareMsg" class="textarea h-24" placeholder="Te dejo esta cápsula para abrir en la fecha ✨"></textarea>
-              <div class="flex items-center gap-2 mt-2">
-                <button id="waBtn" class="btn btn-primary">Enviar por WhatsApp</button>
-                <span class="text-xs opacity-70">Abre WhatsApp con tu texto + link.</span>
-              </div>
-            </div>
-            <div class="mt-3">
-              <div class="label mb-1">QR de WhatsApp (mensaje + link)</div>
-              <div id="waQr" class="flex items-center justify-center p-4 rounded-xl border" style="background:var(--panel);border-color:var(--border)"></div>
+            <div class="mt-3 flex gap-2">
+              <button id="waBtn" class="btn btn-primary">WhatsApp</button>
+              <button id="tgBtn" class="btn">Telegram</button>
+              <button id="icsBtn" class="btn">Descargar .ics</button>
             </div>
           </div>
 
-          <!-- Automatización (sin costos) -->
+          <!-- Series (curso drip) -->
           <div class="p-4 glass card">
-            <h3 class="brand font-extrabold mb-2 text-cyan-200">Automatizar envío (opcional)</h3>
-            <div class="grid md:grid-cols-3 gap-3">
-              <div><label class="label">Canal</label>
-                <select id="autoChannel" class="input">
-                  <option value="">— Elegir —</option>
-                  <option value="telegram">Telegram (bot)</option>
-                  <option value="email">Email (SendGrid)</option>
-                  <option value="whatsapp">WhatsApp (Twilio/WABA)</option>
-                </select>
-              </div>
-              <div><label class="label">Destino</label><input id="autoTo" class="input" placeholder="@mi_canal | mail | +549..."></div>
-              <div><label class="label">Fecha y hora de envío</label><input id="autoWhen" type="datetime-local" class="input"></div>
+            <h3 class="font-extrabold mb-3 text-cyan-200">Creador de series</h3>
+            <div class="grid grid-cols-3 gap-3">
+              <input id="seriesN" class="input" placeholder="# cápsulas" inputmode="numeric">
+              <input id="seriesStep" class="input" placeholder="Cada X días" inputmode="numeric">
+              <button id="seriesBtn" class="btn">Generar</button>
             </div>
-            <div class="mt-3"><label class="label">Texto del mensaje</label><textarea id="autoText" class="textarea h-20" placeholder="Texto que acompaña el enlace de la cápsula."></textarea></div>
-            <div class="mt-3 flex gap-2">
-              <button id="btnSchedule" class="btn btn-primary">Programar envío</button>
-              <button id="btnCancelAuto" class="btn btn-ghost" type="button">Limpiar</button>
-            </div>
-            <p class="text-xs opacity-70 mt-2">Tip: Telegram es gratis y simple para empezar.</p>
+            <p class="text-xs opacity-70 mt-1">Genera N cápsulas desde la fecha, separadas por X días.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Mis cápsulas -->
+    <!-- Mis cápsulas + ranking -->
     <section id="mis" class="glass card p-6 md:p-8">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="brand text-2xl font-extrabold">Mis cápsulas</h2>
+        <h2 class="text-2xl font-extrabold">Mis cápsulas</h2>
         <input id="search" class="input max-w-xs" placeholder="Buscar por título…">
       </div>
       <div id="myList" class="grid md:grid-cols-2 gap-4"></div>
-      <p class="text-xs opacity-70 mt-3">Guardado local (sin registro). Exportá/Importá desde “Crear”.</p>
-    </section>
 
-    <!-- Social -->
-    <section id="social" class="glass card p-6 md:p-8">
-      <h2 class="brand text-2xl font-extrabold mb-2">Social</h2>
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="p-4 rounded-xl border" style="border-color:var(--border)">
-          <h3 class="brand font-extrabold mb-2 text-cyan-200">Calificar la web</h3>
-          <div id="stars" class="flex items-center gap-1 mb-2"></div>
-          <button id="rateBtn" class="btn btn-primary">Enviar calificación</button>
-          <div class="mt-3 text-sm opacity-80">Promedio: <b id="avgScore">—</b> ( <span id="rateCount">0</span> votos )</div>
-        </div>
-        <div class="p-4 rounded-xl border" style="border-color:var(--border)">
-          <h3 class="brand font-extrabold mb-2 text-cyan-200">Comentarios</h3>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="cName" class="input" placeholder="Tu nombre">
-            <input id="cTitle" class="input" placeholder="Asunto">
-          </div>
-          <textarea id="cBody" class="textarea h-24 mt-2" placeholder="Deja tu comentario…"></textarea>
-          <div class="mt-2"><button id="cSend" class="btn btn-ghost">Publicar</button></div>
-          <div id="cList" class="mt-4 grid gap-3"></div>
-          <p class="text-xs opacity-70 mt-2">*(Temporal)* Se guarda en este navegador. Con Firebase lo hacemos global.</p>
-        </div>
+      <div class="mt-6">
+        <h3 class="font-extrabold text-cyan-200 mb-2">Tendencias (local)</h3>
+        <div id="topList" class="grid md:grid-cols-3 gap-3"></div>
       </div>
     </section>
 
-    <!-- Ayuda -->
-    <section id="ayuda" class="glass card p-6 md:p-8">
-      <h2 class="brand text-2xl font-extrabold mb-3">Ayuda rápida</h2>
-      <ol class="list-decimal pl-5 space-y-2 opacity-90">
-        <li>Completá título, mensaje y fecha (≥ +30 s).</li>
-        <li>Guardá. Copiá el enlace o usá QR/WhatsApp.</li>
-        <li>Si pusiste PIN, compartilo por separado.</li>
-        <li>El link <span class="kbd">?capsule=ID</span> abre la vista con countdown.</li>
-        <li>“Automatizar envío” se conecta con Firebase Functions (Telegram/Email/WhatsApp).</li>
-      </ol>
+    <!-- Feedback app -->
+    <section class="glass card p-6 md:p-8">
+      <h3 class="font-extrabold mb-2">Califica la app</h3>
+      <div class="flex items-center gap-2">
+        <select id="appRate" class="input" style="width:auto">
+          <option value="5">⭐️⭐️⭐️⭐️⭐️</option><option value="4">⭐️⭐️⭐️⭐️</option>
+          <option value="3">⭐️⭐️⭐️</option><option value="2">⭐️⭐️</option><option value="1">⭐️</option>
+        </select>
+        <input id="appComment" class="input flex-1" placeholder="Tu comentario">
+        <button id="appSend" class="btn btn-primary">Enviar</button>
+      </div>
+      <div id="appWall" class="grid md:grid-cols-2 gap-3 mt-3"></div>
     </section>
   </main>
 
@@ -304,53 +215,58 @@
   <div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 p-4">
     <div class="max-w-2xl mx-auto glass card p-6 border" style="border-color:var(--border)">
       <div class="flex items-center justify-between">
-        <div id="mPrivacy" class="pill">Pública</div>
-        <button id="mClose" class="btn btn-ghost" aria-label="Cerrar">Cerrar</button>
+        <div id="mPrivacy" class="pill">E2EE</div>
+        <button id="mClose" class="btn" aria-label="Cerrar">Cerrar</button>
       </div>
-      <div id="mTitle" class="brand text-2xl font-extrabold mt-2 text-cyan-200">Título</div>
-      <div class="flex items-center justify-center my-5">
-        <div id="mChest" class="chestWrap">
-          <!-- SVG duplicado para el modal -->
-          <svg id="chestSVG" viewBox="0 0 360 240" class="w-full">
-            <defs>
-              <linearGradient id="wood2" x1="0" x2="1"><stop offset="0%" stop-color="#8B5A2B"/><stop offset="100%" stop-color="#5C3A1A"/></linearGradient>
-              <linearGradient id="metal2" x1="0" x2="1"><stop offset="0%" stop-color="#C0C8D0"/><stop offset="100%" stop-color="#8796A4"/></linearGradient>
-              <radialGradient id="glow2" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#a78bfa" stop-opacity="0.9"/><stop offset="60%" stop-color="#22d3ee" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent" stop-opacity="0"/></radialGradient>
-              <filter id="shadow2" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.35"/></filter>
-            </defs>
-            <ellipse cx="180" cy="210" rx="120" ry="20" fill="#000" opacity="0.35"/>
-            <g filter="url(#shadow2)">
-              <rect x="50" y="120" width="260" height="90" rx="12" fill="url(#wood2)"/>
-              <rect x="50" y="120" width="260" height="90" rx="12" fill="url(#metal2)" opacity="0.08"/>
-              <rect x="50" y="150" width="260" height="12" fill="url(#metal2)" opacity="0.6"/>
-              <rect x="90" y="120" width="12" height="90" fill="url(#metal2)"/>
-              <rect x="258" y="120" width="12" height="90" fill="url(#metal2)"/>
-              <rect x="170" y="145" width="20" height="50" rx="4" fill="url(#metal2)"/>
-              <circle cx="180" cy="165" r="5" fill="#2a3340"/>
-            </g>
-            <g id="lid" transform-origin="180px 120px">
-              <path d="M50,120 Q180,35 310,120 L310,130 L50,130 Z" fill="url(#wood2)"/>
-              <path d="M50,120 Q180,35 310,120 L310,130 L50,130 Z" fill="url(#metal2)" opacity="0.12"/>
-              <rect x="90" y="118" width="12" height="14" fill="url(#metal2)"/>
-              <rect x="258" y="118" width="12" height="14" fill="url(#metal2)"/>
-              <ellipse id="glowM" cx="180" cy="130" rx="100" ry="24" fill="url(#glow2)" opacity="0"/>
-            </g>
-          </svg>
-        </div>
+
+      <div class="flex items-center gap-3 mt-2">
+        <img src="grok_image_qtfpp7.jpg" alt="Logo" class="w-8 h-8 rounded-full object-cover border" style="border-color:var(--border)">
+        <div id="mTitle" class="text-2xl font-extrabold text-cyan-200">Título</div>
       </div>
-      <div id="mCountdown" class="brand text-3xl font-extrabold text-cyan-200 text-center mb-3">00:00:00</div>
+
+      <!-- Cofre (desaparece al abrir) -->
+      <div id="mChestWrap" class="flex items-center justify-center my-5">
+        <div id="mChest" class="cofre"><div class="tapa"></div><div class="base"></div></div>
+      </div>
+
+      <div id="mCountdown" class="text-3xl font-extrabold text-cyan-200 text-center mb-3">00:00:00</div>
+
+      <!-- PIN si modo PIN -->
       <div id="mPINwrap" class="hidden mb-3">
-        <label class="label">Ingresá PIN</label>
+        <label class="text-sm opacity-80">Ingresá PIN</label>
         <input id="mPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="4–6">
       </div>
-      <div id="mContent" class="hidden space-y-2">
-        <div id="mMessage" class="p-3 rounded-xl border" style="background:var(--panel);border-color:var(--border)">...</div>
-        <div id="mLinks"></div>
-        <div class="mt-3 flex gap-2">
-          <button id="mFollow" class="btn btn-ghost">💜 Seguir / Campanita</button>
-          <a id="mGift" class="btn btn-primary hidden" target="_blank">🎁 Regalo</a>
+
+      <!-- Check geolocalización si aplica -->
+      <div id="mGEOWrap" class="hidden mb-3 text-sm opacity-90">
+        Esta cápsula requiere estar en la ubicación configurada. <button id="geoCheck" class="btn">Verificar ubicación</button>
+        <div id="geoResult" class="text-xs opacity-70 mt-1"></div>
+      </div>
+
+      <!-- Contenido grande -->
+      <div id="mContent" class="hidden space-y-3">
+        <div class="flex items-center justify-between">
+          <button id="likeBtn" class="btn">💜 <span id="likeCount">0</span></button>
+          <div class="text-xs opacity-70">Aperturas: <span id="openCount">0</span></div>
+        </div>
+        <div id="mMessage" class="p-4 rounded-xl border text-lg leading-relaxed" style="background:var(--panel);border-color:var(--border)">...</div>
+        <div id="mLinks" class="grid gap-3"></div>
+
+        <!-- Comentarios locales -->
+        <div>
+          <h4 class="font-bold mb-2">Comentarios</h4>
+          <div id="cList" class="grid gap-2 mb-2"></div>
+          <div class="flex gap-2">
+            <input id="cName" class="input" placeholder="Tu nombre">
+            <input id="cText" class="input flex-1" placeholder="Escribe un comentario…">
+            <button id="cSend" class="btn">Enviar</button>
+          </div>
+          <div class="mt-3">
+            <button id="certBtn" class="btn">Descargar certificado de apertura</button>
+          </div>
         </div>
       </div>
+
       <div class="mt-4 flex justify-end gap-2">
         <button id="mOpen" class="btn btn-primary hidden">Ver contenido</button>
       </div>
@@ -363,199 +279,72 @@
   <script>
   (function(){
     const $ = (id)=>document.getElementById(id);
-    const els = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
+    const els = (s,root=document)=>Array.from(root.querySelectorAll(s));
+    const LSKEY="cvf_capsules";
 
-    // === Idioma + Tema ===
+    // ===== i18n mínimo
     const I18N = {
-      es:{create:"Crear",mine:"Mis cápsulas",help:"Ayuda"},
-      en:{create:"Create",mine:"My capsules",help:"Help"}
+      es:{ title:"Guarda hoy. Descubre mañana.", subtitle:"Cápsulas con cifrado de extremo a extremo, apertura por fecha y (opcional) ubicación. Comparte por enlace, QR, WhatsApp o Telegram." },
+      en:{ title:"Save today. Unlock tomorrow.", subtitle:"End-to-end encrypted capsules, time-locked and optionally geo-locked. Share via link, QR, WhatsApp or Telegram." }
     };
-    let lang = localStorage.getItem("cvf_lang") || ((navigator.language||"es").startsWith("en")?"en":"es");
-    let theme = localStorage.getItem("cvf_theme") || "auto";
-    document.documentElement.lang = lang;
-    document.documentElement.setAttribute("data-theme", theme);
-    $("langSel").value = lang; $("themeSel").value = theme;
-    $("langSel").onchange = ()=>{ lang=$("langSel").value; localStorage.setItem("cvf_lang", lang); document.documentElement.lang = lang; };
-    $("themeSel").onchange = ()=>{ theme=$("themeSel").value; localStorage.setItem("cvf_theme", theme); document.documentElement.setAttribute("data-theme", theme); };
+    function setLang(l){ localStorage.setItem("cvf_lang", l); const t=I18N[l]||I18N.es; els("[data-i18n]").forEach(n=>{ const k=n.getAttribute("data-i18n"); if(t[k]) n.textContent=t[k]; }); }
+    const lang = localStorage.getItem("cvf_lang") || "es"; $("langSel").value = lang; setLang(lang);
+    $("langSel").onchange=()=>setLang($("langSel").value);
 
-    // Toast
+    // ===== Tema
+    const theme = localStorage.getItem("cvf_theme") || "auto";
+    document.documentElement.setAttribute("data-theme", theme);
+    $("themeSel").value = theme;
+    $("themeSel").onchange = ()=>{ localStorage.setItem("cvf_theme", $("themeSel").value); document.documentElement.setAttribute("data-theme", $("themeSel").value); };
+
+    // ===== Toast
     function toast(msg, ok=true){
-      const box = $("toasts");
-      const div = document.createElement("div");
-      div.className = "glass card px-4 py-3 border " + (ok ? "border-emerald-400/40" : "border-rose-400/40");
+      const box = $("toasts"); const div = document.createElement("div");
+      div.className = "glass card px-4 py-3 border "+(ok?"border-emerald-400/40":"border-rose-400/40");
       div.innerHTML = `<div class="text-sm ${ok?"text-emerald-200":"text-rose-200"}">${msg}</div>`;
-      box.appendChild(div); setTimeout(()=>div.remove(), 2400);
+      box.appendChild(div); setTimeout(()=>div.remove(), 2600);
     }
 
-    // Utils
-    const BACKEND_URL = "https://us-central1-TU_PROJECT_ID.cloudfunctions.net"; // <- reemplazá TU_PROJECT_ID cuando actives Functions
-    function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+    // ===== Util fechas
     function parseDTLocal(v){ return new Date(v).getTime(); }
     function toDTLocalValue(ts){ const d=new Date(ts); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16); }
-    function linkFor(id){ const u=new URL(location.href); u.search=""; u.hash=""; return `${u.toString()}?capsule=${encodeURIComponent(id)}`; }
-    function waLink(id, msg){ const text=(msg||"Te dejo esta cápsula para abrir en la fecha ✨")+" "+linkFor(id); return "https://wa.me/?text="+encodeURIComponent(text); }
-    function fmt(ts){ return new Date(ts).toLocaleString(lang==="en"?"en-US":"es-AR"); }
 
-    // Cofre
-    function chestSetOpen(svgRootId, open){
-      const lid = document.querySelector(`#${svgRootId} ${svgRootId==="chestSVGHero"?"#lidHero":"#lid"}`);
-      const glow = document.querySelector(`#${svgRootId} ${svgRootId==="chestSVGHero"?"#glowHero":"#glowM"}`);
-      if(!lid || !glow) return;
-      lid.style.transition="transform .9s cubic-bezier(.2,.8,.2,1)";
-      glow.style.transition="opacity .9s ease";
-      if(open){ lid.style.transform="rotateX(60deg) translateY(-8px)"; glow.style.opacity="1"; }
-      else { lid.style.transform="rotateX(0deg)"; glow.style.opacity="0"; }
-    }
+    // ===== Hero demo
     let demoEnd = Date.now()+75*1000;
     setInterval(()=>{
       const d=Math.max(0, demoEnd-Date.now());
       const s=Math.floor(d/1000);
-      const h=String(Math.floor(s/3600)).padStart(2,'0');
-      const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
-      const ss=String(s%60).padStart(2,'0');
-      $("countHero").textContent = `${h}:${m}:${ss}`;
-      if(d<=0) chestSetOpen("chestSVGHero", true);
+      const H=String(Math.floor(s/3600)).padStart(2,'0');
+      const M=String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const S=String(s%60).padStart(2,'0');
+      $("countHero").textContent = `${H}:${M}:${S}`;
     },1000);
 
-    // Estado
-    const state = { items: [] };
-    function load(){ try{ state.items = JSON.parse(localStorage.getItem("cvf_capsules")||"[]"); }catch{ state.items=[]; } }
-    function save(){ localStorage.setItem("cvf_capsules", JSON.stringify(state.items)); }
-
-    // Compartir
-    function setQR(id="DEMO"){
-      const node = $("qrPreview"); node.innerHTML="";
-      const text = id==="DEMO" ? location.href.split('#')[0] : linkFor(id);
-      new QRCode(node,{ text, width:160, height:160, correctLevel: QRCode.CorrectLevel.H });
+    // ===== Crypt helpers (WebCrypto AES-GCM)
+    const enc = new TextEncoder(); const dec = new TextDecoder();
+    const b64 = {
+      to(b){ return btoa(String.fromCharCode(...new Uint8Array(b))); },
+      from(s){ return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
+    };
+    async function aesImportRaw(keyBytes){ return await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt","decrypt"]); }
+    async function aesGenKey(){ const k = crypto.getRandomValues(new Uint8Array(32)); return {raw:k, crypto: await aesImportRaw(k)}; }
+    async function deriveFromPIN(pin, salt){
+      const base = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveBits","deriveKey"]);
+      const k = await crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:100000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, true, ["encrypt","decrypt"]);
+      const raw = new Uint8Array(await crypto.subtle.exportKey("raw", k));
+      return { raw, crypto: await aesImportRaw(raw) };
     }
-    function setShareUI(id){
-      const url = id ? linkFor(id) : "";
-      const msgBox = $("shareMsg");
-      $("shareLink").value = url;
-      if(msgBox && !msgBox.value) msgBox.value = "Te dejo esta cápsula para abrir en la fecha ✨";
-      $("copyLinkBtn").onclick = async ()=>{ if(!url) return toast("Guardá la cápsula primero", false); try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); } };
-      $("waBtn").onclick = ()=>{ if(!id) return toast("Guardá la cápsula primero", false); location.href = waLink(id, msgBox.value); };
-      const waQr = $("waQr"); waQr.innerHTML = ""; if(id){ new QRCode(waQr,{ text: waLink(id, msgBox.value), width:160, height:160, correctLevel:QRCode.CorrectLevel.H }); msgBox.addEventListener("input",()=>{ waQr.innerHTML=""; new QRCode(waQr,{ text: waLink(id, msgBox.value), width:160, height:160, correctLevel:QRCode.CorrectLevel.H }); }); }
+    async function aesEncrypt(keyCrypto, msg){
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, keyCrypto, enc.encode(msg));
+      return { iv, ct:new Uint8Array(ct) };
     }
-
-    function defaultsForCreate(){ const dt = new Date(Date.now()+60000); $("capOpen").value = toDTLocalValue(dt); setQR(); setShareUI(null); $("capGift").value=""; }
-
-    // Crear
-    $("btnCreate").onclick = async ()=>{
-      const title=$("capTitle").value.trim();
-      const message=$("capMessage").value.trim();
-      const openStr=$("capOpen").value;
-      const pin=$("capPIN").value.trim();
-      const links=($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean);
-      const gift=$("capGift").value.trim();
-      if(!title||!message||!openStr) return toast("Completá título, mensaje y fecha.", false);
-      if(pin && (pin.length<4 || pin.length>6 || !/^\d+$/.test(pin))) return toast("PIN: 4–6 dígitos.", false);
-      const openAt=parseDTLocal(openStr);
-      if(!openAt || openAt < Date.now()+30*1000) return toast("La fecha debe ser ≥ 30s en el futuro.", false);
-
-      const id=uid();
-      const capsule={ id, title, message, openAt, pin:pin||"", links, gift, createdAt:Date.now(), privacy: pin?"private":"public" };
-      state.items.unshift(capsule); save();
-
-      setQR(id); setShareUI(id);
-      try{ await navigator.clipboard.writeText(linkFor(id)); }catch{}
-      toast("Cápsula creada. Enlace copiado ✅");
-      $("capTitle").value=""; $("capMessage").value=""; $("capLinks").value=""; $("capPIN").value=""; $("capGift").value="";
-      renderList();
-    };
-
-    // Preview
-    $("btnPreview").onclick=()=>{
-      const c={ id:"PREVIEW", title:$("capTitle").value.trim()||"Cápsula",
-        message:$("capMessage").value.trim()||"Mensaje de ejemplo.",
-        openAt: parseDTLocal($("capOpen").value)||Date.now()+60000,
-        links: ($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean),
-        pin:$("capPIN").value.trim(), gift:$("capGift").value.trim(),
-        privacy:$("capPIN").value.trim()? "private":"public" };
-      openViewer(c);
-    };
-
-    // ICS
-    $("btnICS")?.addEventListener("click", ()=>{
-      const title=$("capTitle").value.trim()||"Apertura de cápsula";
-      const openStr=$("capOpen").value; if(!openStr) return toast("Definí la fecha primero.", false);
-      const dt=new Date(openStr), dtUTC=dt.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
-      const ics=`BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//CVF//ES
-BEGIN:VEVENT
-UID:${uid()}@cvf
-DTSTAMP:${dtUTC}
-DTSTART:${dtUTC}
-SUMMARY:${title}
-DESCRIPTION:Recordatorio de apertura de cápsula
-END:VEVENT
-END:VCALENDAR`;
-      const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"})); a.download="apertura_capsula.ics"; a.click();
-      toast(".ics OK");
-    });
-
-    // Export/Import
-    $("btnExport").onclick=()=>{
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(state.items,null,2)],{type:"application/json"}));
-      a.download="capsulas_backup.json"; a.click(); toast("Backup exportado");
-    };
-    $("importFile").onchange=(e)=>{
-      const f=e.target.files[0]; if(!f) return;
-      const r=new FileReader(); r.onload=()=>{
-        try{ const arr=JSON.parse(r.result||"[]"); if(!Array.isArray(arr)) throw new Error();
-          const ids=new Set(state.items.map(x=>x.id)); arr.forEach(x=>{ if(x && x.id && !ids.has(x.id)) state.items.push(x); });
-          save(); toast("Backup importado ✅"); renderList();
-        }catch{ toast("Archivo inválido", false); }
-      }; r.readAsText(f);
-    };
-
-    // Listado
-    $("search").addEventListener("input", renderList);
-    function renderList(){
-      const box=$("myList"); box.innerHTML="";
-      const q=($("search").value||"").toLowerCase();
-      const items=state.items.filter(c=>c.title.toLowerCase().includes(q));
-      if(!items.length){ box.innerHTML=`<div class="p-4 glass card">No hay cápsulas.</div>`; return; }
-      items.forEach(c=>{
-        const url=linkFor(c.id);
-        const card=document.createElement("div");
-        card.className="p-4 glass card border"; card.style.borderColor="var(--border)";
-        card.innerHTML=`
-          <div class="flex items-center justify-between">
-            <div class="pill">${c.pin? "Privada":"Pública"}</div>
-            <div class="text-xs" style="color:var(--muted2)">${fmt(c.createdAt)}</div>
-          </div>
-          <div class="mt-1 text-lg font-bold" style="color:#22d3ee">${c.title}</div>
-          <div class="text-sm" style="color:var(--muted)">${(c.message||"").replace(/\n/g," ").slice(0,180)}</div>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <a class="btn btn-primary" href="${url}">Abrir / Vista</a>
-            <button class="btn btn-ghost" data-act="copy">Copiar link</button>
-            <button class="btn btn-ghost" data-act="wa">WhatsApp</button>
-            <button class="btn btn-ghost" data-act="embed">Embed</button>
-            <button class="btn btn-ghost" data-act="edit">Editar</button>
-            <button class="btn btn-ghost" data-act="del">Eliminar</button>
-          </div>`;
-        card.querySelector('[data-act="copy"]').onclick=async()=>{ try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); } };
-        card.querySelector('[data-act="wa"]').onclick=()=>{ location.href=waLink(c.id,"Te dejo esta cápsula para abrir en la fecha ✨"); };
-        card.querySelector('[data-act="embed"]').onclick=()=>{
-          const code=`<iframe src="${location.origin+location.pathname}?capsule=${c.id}" width="100%" height="520" frameborder="0"></iframe>`;
-          navigator.clipboard?.writeText(code); toast("Embed copiado");
-        };
-        card.querySelector('[data-act="edit"]').onclick=()=>{
-          $("capTitle").value=c.title; $("capMessage").value=c.message; $("capOpen").value=toDTLocalValue(c.openAt);
-          $("capPIN").value=c.pin||""; $("capLinks").value=(c.links||[]).join(", "); $("capGift").value=c.gift||"";
-          toast("Cargada en formulario para editar"); location.hash="#crear";
-        };
-        card.querySelector('[data-act="del"]').onclick=()=>{
-          if(confirm("¿Eliminar esta cápsula?")){ const idx=state.items.findIndex(x=>x.id===c.id); if(idx>=0){ state.items.splice(idx,1); save(); toast("Eliminada"); renderList(); } }
-        };
-        box.appendChild(card);
-      });
+    async function aesDecrypt(keyCrypto, iv, ct){
+      const p = await crypto.subtle.decrypt({name:"AES-GCM", iv}, keyCrypto, ct);
+      return dec.decode(p);
     }
 
-    // Clasificador básico de adjuntos
+    // ===== Clasificar & Embeds
     function classifyLink(u){
       try{
         const url=new URL(u), path=url.pathname.toLowerCase(), host=url.hostname.toLowerCase();
@@ -571,131 +360,417 @@ END:VCALENDAR`;
       const {type, url} = item;
       if (type==="youtube"){
         let vid=""; try{ const u=new URL(url); vid=u.hostname.includes("youtu.be")?u.pathname.slice(1):(u.searchParams.get("v")||""); }catch{}
-        if (vid) return `<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)"><iframe width="100%" height="315" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe></div>`;
+        if (vid) return `<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)"><iframe width="100%" height="360" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe></div>`;
       }
-      if (type==="video") return `<video controls class="w-full rounded-xl border" style="background:var(--panel);border-color:var(--border)"><source src="${url}"><a href="${url}" target="_blank">${url}</a></video>`;
+      if (type==="video") return `<video controls class="w-full rounded-xl border" style="background:var(--panel);border-color:var(--border)}"><source src="${url}"></video>`;
       if (type==="audio") return `<audio controls class="w-full"><source src="${url}"></audio>`;
-      if (type==="image") return `<img src="${url}" alt="Adjunto" class="max-h-[360px] w-auto rounded-xl border" style="border-color:var(--border)"/>`;
+      if (type==="image") return `<img src="${url}" alt="Adjunto" class="max-h-[420px] w-auto rounded-xl border" style="border-color:var(--border)"/>`;
       if (type==="gdrive"){
         let iframe=""; try{ const u=new URL(url); let id=""; const m=u.pathname.match(/\/file\/d\/([^/]+)/); if(m) id=m[1]; else id=u.searchParams.get("id")||""; if(id) iframe=`<iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="360" allow="autoplay"></iframe>`; }catch{}
-        return `<div class="space-y-2">${iframe?`<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">${iframe}</div>`:""}<a class="underline" style="color:#22d3ee" href="${url}" target="_blank">Ver en Drive</a></div>`;
+        return `<div class="space-y-2">${iframe?`<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">${iframe}</div>`:""}<a class="underline" style="color:var(--accent)" href="${url}" target="_blank">Ver en Drive</a></div>`;
       }
-      return `<a class="underline" style="color:#22d3ee" target="_blank" href="${url}">${url}</a>`;
+      return `<a class="underline" style="color:var(--accent)" target="_blank" href="${url}">${url}</a>`;
     }
 
-    // Viewer
-    function openViewer(c){
-      $("modal").classList.remove("hidden");
-      $("mTitle").textContent=c.title||"Cápsula";
-      $("mPrivacy").textContent=c.pin? "Privada":"Pública";
-      $("mMessage").textContent=c.message||"";
-      $("mLinks").innerHTML=(c.links||[]).map(u=>renderEmbedHTML(classifyLink(u))).join("");
-      $("mPINwrap").classList.toggle("hidden", !c.pin);
-      $("mGift").classList.toggle("hidden", !(c.gift && c.gift.length));
+    // ===== Local DB
+    const state = { items: [] };
+    function load(){ try{ state.items = JSON.parse(localStorage.getItem(LSKEY)||"[]"); }catch{ state.items=[]; } }
+    function save(){ localStorage.setItem(LSKEY, JSON.stringify(state.items)); }
 
+    // ===== QR/Compartir
+    function setQR(nodeId, text){
+      const node = $(nodeId); node.innerHTML="";
+      new QRCode(node,{ text, width:160, height:160, correctLevel:QRCode.CorrectLevel.H });
+    }
+
+    // ===== Link portable
+    function makeLinkPayload(obj){
+      const json = JSON.stringify(obj);
+      return btoa(unescape(encodeURIComponent(json))); // base64 en query
+    }
+    function parseLinkPayload(b64){
+      return JSON.parse(decodeURIComponent(escape(atob(b64))));
+    }
+
+    // ===== Crear cápsula (con cifrado)
+    async function createCapsule(){
+      const title=$("capTitle").value.trim();
+      const message=$("capMessage").value.trim();
+      const openStr=$("capOpen").value;
+      const pin=$("capPIN").value.trim();
+      const secMode=$("secMode").value; // link | pin
+      const links=($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean);
+      const geoR = parseInt(($("geoRadius").value||"").trim(),10);
+      if(!title||!message||!openStr) return toast("Completá título, mensaje y fecha.", false);
+      if(secMode==="pin" && (!/^\d{4,6}$/.test(pin))) return toast("PIN: 4–6 dígitos.", false);
+      const openAt=parseDTLocal(openStr);
+      if(!openAt || openAt < Date.now()+30*1000) return toast("La fecha debe ser ≥ 30s en el futuro.", false);
+
+      // crypto
+      let meta = { id: uid(), title, openAt, mode:secMode, links, createdAt: Date.now() };
+      let salt=null, keyRaw=null, keyCrypto=null, iv, ct;
+
+      if (secMode==="link"){
+        const k = await aesGenKey(); keyRaw=k.raw; keyCrypto=k.crypto;
+        const out = await aesEncrypt(keyCrypto, message); iv=out.iv; ct=out.ct;
+      } else {
+        salt = crypto.getRandomValues(new Uint8Array(16));
+        const k = await deriveFromPIN(pin, salt); keyRaw=k.raw; keyCrypto=k.crypto;
+        const out = await aesEncrypt(keyCrypto, message); iv=out.iv; ct=out.ct;
+      }
+
+      // geo
+      if (geoPos && geoR>0){
+        meta.geo = { lat: geoPos.lat, lon: geoPos.lon, r: geoR };
+      }
+
+      const payload = {
+        ...meta,
+        iv: b64.to(iv),
+        salt: salt ? b64.to(salt) : null,
+        ct: b64.to(ct)
+      };
+      const base = new URL(location.href); base.search=""; base.hash="";
+      base.searchParams.set("capsule", meta.id);
+      base.searchParams.set("data", makeLinkPayload(payload));
+      if (secMode==="link"){
+        // la clave solo en el fragment (no viaja en HTTP)
+        base.hash = "k="+b64.to(keyRaw);
+      }
+
+      const url=base.toString();
+      $("shareLink").value = url;
+      setQR("qrPreview", url);
+      $("copyLinkBtn").onclick=async()=>{ try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); } };
+      $("waBtn").onclick=()=>{ location.href=`https://wa.me/?text=${encodeURIComponent("Te dejo esta cápsula ✨ "+url)}`; };
+      $("tgBtn").onclick=()=>{ location.href=`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Te dejo esta cápsula ✨")}`; };
+      $("icsBtn").onclick=()=>downloadICS(meta);
+
+      // guardar listado local (no guarda el texto en claro)
+      state.items.unshift({ ...meta, likes:0, opens:0 });
+      save(); renderList(); toast("Cápsula creada. Enlace listo ✅");
+      // limpiar form
+      $("capTitle").value=""; $("capMessage").value=""; $("capPIN").value=""; $("capLinks").value="";
+    }
+
+    // ===== Geolocalización
+    let geoPos=null;
+    $("geoMark").onclick=()=>{
+      const r = parseInt(($("geoRadius").value||"").trim(),10);
+      if(!r){ toast("Indicá un radio (m).", false); return; }
+      if(!navigator.geolocation){ toast("Geolocalización no disponible", false); return; }
+      navigator.geolocation.getCurrentPosition(pos=>{
+        geoPos={ lat: pos.coords.latitude, lon: pos.coords.longitude };
+        $("geoHint").textContent=`Fijado: ${geoPos.lat.toFixed(5)}, ${geoPos.lon.toFixed(5)} (±${r}m)`;
+        toast("Ubicación marcada ✅");
+      }, ()=> toast("No se pudo obtener ubicación", false), { enableHighAccuracy:true, timeout:8000, maximumAge:0 });
+    };
+    function haversine(lat1,lon1,lat2,lon2){
+      const R=6371000, toRad=x=>x*Math.PI/180;
+      const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+      return 2*R*Math.asin(Math.sqrt(a));
+    }
+
+    // ===== Series (curso drip)
+    $("seriesBtn").onclick=()=>{
+      const n=parseInt(($("seriesN").value||"0"),10);
+      const step=parseInt(($("seriesStep").value||"0"),10);
+      const baseStr=$("capOpen").value;
+      if(!n||!step||!baseStr) return toast("Completá cantidad, intervalo y fecha base.", false);
+      const base=parseDTLocal(baseStr);
+      for(let i=0;i<n;i++){
+        const t = base + (i*step*24*60*60*1000);
+        state.items.unshift({ id:uid(), title:`${$("capTitle").value.trim()||"Clase"} #${i+1}`, openAt:t, mode:$("secMode").value, links:[], createdAt:Date.now(), likes:0, opens:0 });
+      }
+      save(); renderList(); toast("Serie generada ✅");
+    };
+
+    // ===== Presets
+    document.querySelectorAll('[data-preset]').forEach(b=>{
+      b.onclick=()=>{
+        const p=b.dataset.preset, now=Date.now();
+        if(p==="birthday"){
+          $("capTitle").value="Feliz cumple 🎂 (abre a las 00:00)";
+          $("capMessage").value="¡Feliz cumple! 💫 Te preparé este mensaje.";
+          const d=new Date(now+24*60*60*1000); d.setHours(0,0,0,0);
+          $("capOpen").value = toDTLocalValue(d.getTime());
+          $("secMode").value="link";
+        } else if(p==="premiere"){
+          $("capTitle").value="Estreno del video 🎬";
+          $("capMessage").value="¡Gracias por activar la campanita! Abrí durante el estreno.";
+          $("capLinks").value="https://youtube.com/watch?v=VIDEO_ID";
+          $("capOpen").value = toDTLocalValue(now+60*60*1000);
+          $("secMode").value="link";
+        } else if(p==="course"){
+          $("capTitle").value="Curso drip — Clase 1";
+          $("capMessage").value="Bienvenido/a al curso. Mañana llega la Clase 2 😉";
+          $("capOpen").value = toDTLocalValue(now+5*60*1000);
+          $("seriesN").value="5"; $("seriesStep").value="1";
+          $("secMode").value="pin";
+        } else if(p==="gift"){
+          $("capTitle").value="Regalo del creador 🎁";
+          $("capMessage").value="Gracias por seguirme. Abrí y reclamá tu sorpresa.";
+          $("capOpen").value = toDTLocalValue(now+2*60*60*1000);
+          $("secMode").value="link";
+        }
+        toast("Preset cargado ✅");
+      };
+    });
+
+    // ===== Listado + ranking
+    $("search").addEventListener("input", renderList);
+    function renderList(){
+      const box=$("myList"); box.innerHTML="";
+      const q=($("search").value||"").toLowerCase();
+      const items=state.items.filter(c=> (c.title||"").toLowerCase().includes(q));
+      if(!items.length){ box.innerHTML=`<div class="p-4 glass card">No hay cápsulas.</div>`; $("topList").innerHTML=""; return; }
+      items.forEach(c=>{
+        const card=document.createElement("div"); card.className="p-4 glass card border"; card.style.borderColor="var(--border)";
+        const eta = c.openAt > Date.now() ? new Date(c.openAt).toLocaleString() : "¡Lista!";
+        card.innerHTML=`
+          <div class="flex items-center justify-between">
+            <div class="pill">E2EE • ${c.mode==="pin"?"PIN":"Link secreto"}</div>
+            <div class="text-xs" style="color:var(--muted)">${new Date(c.createdAt).toLocaleString()}</div>
+          </div>
+          <div class="mt-1 text-lg font-bold" style="color:var(--accent)">${c.title}</div>
+          <div class="text-sm" style="color:var(--muted)">Se abre: ${eta}</div>
+          <div class="mt-2 text-xs" style="color:var(--muted)">Likes: ${c.likes||0} · Aperturas: ${c.opens||0}</div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button class="btn btn-primary" data-act="view">Abrir / Vista</button>
+            <button class="btn" data-act="copy">Copiar link</button>
+            <button class="btn" data-act="wa">WhatsApp</button>
+            <button class="btn" data-act="tg">Telegram</button>
+            <button class="btn" data-act="del">Eliminar</button>
+          </div>`;
+        card.querySelector('[data-act="view"]').onclick=()=>openViewerFromCard(c);
+        card.querySelector('[data-act="copy"]').onclick=async()=>{
+          const url = makeShareURLFromMeta(c);
+          try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); }
+        };
+        card.querySelector('[data-act="wa"]').onclick=()=>{ const url=makeShareURLFromMeta(c); location.href=`https://wa.me/?text=${encodeURIComponent("Te dejo esta cápsula ✨ "+url)}`; };
+        card.querySelector('[data-act="tg"]').onclick=()=>{ const url=makeShareURLFromMeta(c); location.href=`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Te dejo esta cápsula ✨")}`; };
+        card.querySelector('[data-act="del"]').onclick=()=>{
+          if(confirm("¿Eliminar esta cápsula?")){ state.items = state.items.filter(x=>x.id!==c.id); save(); renderList(); toast("Eliminada"); }
+        };
+        box.appendChild(card);
+      });
+      // Top
+      const top = [...state.items].sort((a,b)=>(b.likes||0)+(b.opens||0)-(a.likes||0)-(a.opens||0)).slice(0,6);
+      $("topList").innerHTML = top.map(c=>`<div class="glass card p-3 border" style="border-color:var(--border)">
+        <div class="text-sm font-bold" style="color:var(--accent)">${c.title}</div>
+        <div class="text-xs" style="color:var(--muted)">Likes ${c.likes||0} · Opens ${c.opens||0}</div>
+        <button class="btn mt-2" onclick="location.href='${makeShareURLFromMeta(c)}'">Compartir</button>
+      </div>`).join("");
+    }
+
+    // Construir link compartible desde meta (sin el mensaje, pero válido si era de modo link? -> mostramos aviso)
+    function makeShareURLFromMeta(meta){
+      // Sin el texto cifrado no tiene contenido (porque el mensaje no se guarda local en claro).
+      // Generamos un link informativo que apunta a esta misma página con sólo el título, para que pida el original.
+      const payload = { id:meta.id, title:meta.title, openAt:meta.openAt, mode:meta.mode, links:meta.links||[], iv:null, salt:null, ct:null, ghost:true };
+      const base = new URL(location.href); base.search=""; base.hash="";
+      base.searchParams.set("capsule", meta.id);
+      base.searchParams.set("data", makeLinkPayload(payload));
+      return base.toString();
+    }
+
+    // ===== Viewer (abrir desde card con datos locales -> sólo meta; requiere link real para descifrar)
+    function openViewerFromCard(meta){
+      const p = new URLSearchParams(location.search);
+      let data = p.get("data"); // si hay en URL actual, úsalo
+      if(!data){
+        alert("Usá el enlace generado al crear para abrir con contenido cifrado.\nDesde el listado local sólo ves meta.");
+        return;
+      }
+      openViewer(data, location.hash);
+    }
+
+    // ===== Viewer (desde deep link real)
+    function openViewer(dataB64, hash){
+      const payload = parseLinkPayload(dataB64);
+      $("modal").classList.remove("hidden");
+      $("mTitle").textContent=payload.title||"Cápsula";
+      $("mPrivacy").textContent="E2EE • "+(payload.mode==="pin"?"PIN":"Link secreto");
+
+      // countdown
       function tick(){
-        const d=Math.max(0, c.openAt-Date.now());
+        const d=Math.max(0, (payload.openAt||0)-Date.now());
         const s=Math.floor(d/1000);
-        const h=String(Math.floor(s/3600)).padStart(2,'0');
-        const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
-        const ss=String(s%60).padStart(2,'0');
-        $("mCountdown").textContent=d>0?`${h}:${m}:${ss}`:"00:00:00";
-        if(d<=0){ chestSetOpen("chestSVG", true); $("mOpen").classList.remove("hidden"); clearInterval(tmr); }
+        const H=String(Math.floor(s/3600)).padStart(2,'0');
+        const M=String(Math.floor((s%3600)/60)).padStart(2,'0');
+        const S=String(s%60).padStart(2,'0');
+        $("mCountdown").textContent=d>0?`${H}:${M}:${S}`:"00:00:00";
+        if(d<=0){ $("mOpen").classList.remove("hidden"); clearInterval(tmr); }
       }
       const tmr=setInterval(tick,1000); tick();
 
-      $("mOpen").onclick=()=>{
-        if(c.pin){
-          const p=$("mPIN").value.trim();
-          if(!p || p!==c.pin){ toast("PIN incorrecto", false); return; }
+      // geolock?
+      let geoOK=true;
+      if (payload.geo){
+        $("mGEOWrap").classList.remove("hidden");
+        $("geoCheck").onclick=()=>{
+          if(!navigator.geolocation){ $("geoResult").textContent="Geolocalización no disponible"; geoOK=false; return; }
+          navigator.geolocation.getCurrentPosition(pos=>{
+            const dist = Math.round(haversine(payload.geo.lat, payload.geo.lon, pos.coords.latitude, pos.coords.longitude));
+            geoOK = dist <= (payload.geo.r||0);
+            $("geoResult").textContent = geoOK ? `OK, estás dentro (${dist} m)` : `Fuera de radio (${dist} m)`;
+          }, ()=>{ $("geoResult").textContent="No se pudo obtener ubicación"; geoOK=false; }, {enableHighAccuracy:true, timeout:8000});
+        };
+      }
+
+      // PIN?
+      $("mPINwrap").classList.toggle("hidden", payload.mode!=="pin");
+
+      $("mOpen").onclick=async ()=>{
+        if(!geoOK && payload.geo){ toast("Tenés que estar en la ubicación.", false); return; }
+        // Descifrar
+        try{
+          let keyCrypto=null;
+          const iv = b64.from(payload.iv||"");
+          const ct = b64.from(payload.ct||"");
+          if(payload.mode==="link"){
+            const h = new URLSearchParams((hash||"").replace(/^#/, ""));
+            const k = h.get("k"); if(!k){ toast("Falta clave (#k) en el link", false); return; }
+            const keyRaw = b64.from(k);
+            keyCrypto = await aesImportRaw(keyRaw);
+          } else {
+            const pin = $("mPIN").value.trim();
+            if(!/^\d{4,6}$/.test(pin)) return toast("PIN inválido", false);
+            const salt = b64.from(payload.salt||"");
+            keyCrypto = (await deriveFromPIN(pin, salt)).crypto;
+          }
+          const msg = await aesDecrypt(keyCrypto, iv, ct);
+          // Open UI
+          $("mChestWrap").classList.add("hidden");
+          $("mContent").classList.remove("hidden");
+          $("mMessage").textContent = msg;
+          $("mLinks").innerHTML = (payload.links||[]).map(u=>renderEmbedHTML(classifyLink(u))).join("");
+          confetti({ particleCount:240, spread:70, origin:{ y:0.6 } });
+
+          // métricas locales
+          incrOpen(payload.id);
+          // likes
+          $("likeCount").textContent = getLikes(payload.id);
+          $("likeBtn").onclick=()=>{ const v=incrLike(payload.id); $("likeCount").textContent=v; };
+
+          // comentarios
+          renderComments(payload.id);
+          $("cSend").onclick=()=>sendComment(payload.id);
+
+          // certificado
+          $("certBtn").onclick=()=>downloadCertificate(payload.title);
+        }catch(e){
+          console.error(e);
+          toast("No se pudo descifrar. Verificá clave/PIN.", false);
         }
-        $("mContent").classList.remove("hidden");
-        if(c.gift&&c.gift.length){ $("mGift").href=c.gift; }
-        confetti({ particleCount:240, spread:70, origin:{ y:0.6 } });
       };
+
       $("mClose").onclick=()=>{ $("modal").classList.add("hidden"); };
-      $("mFollow").onclick=()=>{
-        chestSetOpen("chestSVG", true);
-        confetti({ particleCount:200, spread:70, origin:{ y:0.6 } });
-        if(c.gift&&c.gift.length){ $("mGift").classList.remove("hidden"); toast("Regalo desbloqueado 🎁"); }
-        else toast("¡Gracias por seguir! 💜");
-      };
     }
 
-    // Deep link
-    function checkDeepLink(){
-      const params=new URLSearchParams(location.search);
-      const id=params.get("capsule"); if(!id) return;
-      const c=state.items.find(x=>x.id===id);
-      if(!c){ toast("Cápsula no encontrada en este dispositivo", false); return; }
-      openViewer(c);
-      if(params.get("auto")==="open"){
-        const tryOpen=setInterval(()=>{ const btn=$("mOpen"); if(btn && !btn.classList.contains("hidden")){ btn.click(); clearInterval(tryOpen); } },500);
-        setTimeout(()=>clearInterval(tryOpen), 20000);
+    // ===== Likes & opens
+    function getItemMeta(id){ const a=JSON.parse(localStorage.getItem(LSKEY)||"[]"); return a.find(x=>x.id===id); }
+    function writeItemMeta(m){ const a=JSON.parse(localStorage.getItem(LSKEY)||"[]"); const i=a.findIndex(x=>x.id===m.id); if(i>=0) a[i]=m; localStorage.setItem(LSKEY, JSON.stringify(a)); }
+    function incrOpen(id){ const m=getItemMeta(id); if(!m) return 0; m.opens=(m.opens||0)+1; writeItemMeta(m); renderList(); return m.opens; }
+    function getLikes(id){ const m=getItemMeta(id); return m? (m.likes||0):0; }
+    function incrLike(id){ const m=getItemMeta(id); if(!m) return 0; m.likes=(m.likes||0)+1; writeItemMeta(m); renderList(); return m.likes; }
+
+    // ===== Comentarios
+    function commentsKey(id){ return "cvf_comments_"+id; }
+    function renderComments(id){
+      const arr = JSON.parse(localStorage.getItem(commentsKey(id))||"[]");
+      $("cList").innerHTML = arr.map(x=>`<div class="glass card p-2 border" style="border-color:var(--border)"><b>${x.n||"Anónimo"}:</b> ${x.t}</div>`).join("");
+    }
+    function sendComment(id){
+      const n=$("cName").value.trim(); const t=$("cText").value.trim(); if(!t) return;
+      const arr = JSON.parse(localStorage.getItem(commentsKey(id))||"[]"); arr.push({n,t,ts:Date.now()});
+      localStorage.setItem(commentsKey(id), JSON.stringify(arr)); $("cText").value=""; renderComments(id); toast("Comentario enviado ✅");
+    }
+
+    // ===== ICS
+    function downloadICS(meta){
+      const dt = new Date(meta.openAt).toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+      const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//CVF//ES
+BEGIN:VEVENT
+UID:${meta.id}
+DTSTAMP:${dt}
+DTSTART:${dt}
+SUMMARY:${meta.title.replace(/[\n\r]/g," ")}
+DESCRIPTION:Capsula programada
+END:VEVENT
+END:VCALENDAR`.trim();
+      const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
+      a.download=`capsula_${meta.id}.ics`; a.click();
+    }
+
+    // ===== Certificado PNG
+    function downloadCertificate(title){
+      const c=document.createElement("canvas"); c.width=1200; c.height=630; const ctx=c.getContext("2d");
+      // fondo
+      const g=ctx.createLinearGradient(0,0,c.width,c.height);
+      g.addColorStop(0,"#0ea5e9"); g.addColorStop(1,"#6366f1"); ctx.fillStyle=g; ctx.fillRect(0,0,c.width,c.height);
+      // marco
+      ctx.strokeStyle="rgba(255,255,255,.6)"; ctx.lineWidth=8; ctx.strokeRect(24,24,c.width-48,c.height-48);
+      ctx.fillStyle="#fff"; ctx.font="bold 56px Inter"; ctx.fillText("Certificado de apertura", 80, 150);
+      ctx.font="28px Inter"; ctx.fillText("Cápsula:", 80, 220);
+      wrapText(ctx, title, 200, 220, 980, 34);
+      ctx.font="24px Inter"; ctx.fillText("Fecha:", 80, 300);
+      ctx.fillText(new Date().toLocaleString(), 160, 300);
+      ctx.font="24px Inter"; ctx.fillText("Emitido por Cápsula Volver al Futuro", 80, 360);
+      const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download="certificado_apertura.png"; a.click();
+      function wrapText(ctx, text, x, y, maxW, lh){
+        const words=text.split(" "); let line="";
+        for(let n=0; n<words.length; n++){
+          const test=line+words[n]+" "; const w=ctx.measureText(test).width;
+          if(w>maxW && n>0){ ctx.fillText(line, x, y); line=words[n]+" "; y+=lh; } else line=test;
+        }
+        ctx.fillText(line, x, y);
       }
     }
 
-    // Automatización (payload mínimo)
-    $("btnSchedule").onclick=async()=>{
-      const channel=$("autoChannel").value;
-      const to=$("autoTo").value.trim();
-      const whenStr=$("autoWhen").value;
-      const text=$("autoText").value.trim();
-      const lastId=(state.items[0]&&state.items[0].id)?state.items[0].id:null;
+    // ===== Deep link
+    function checkDeepLink(){
+      const p=new URLSearchParams(location.search);
+      const data=p.get("data"); if(!data) return;
+      openViewer(data, location.hash);
+    }
 
-      if(!channel||!to||!whenStr||!lastId){ toast("Completá canal, destino y fecha. Guardá una cápsula primero.", false); return; }
-
-      const payload={ capsuleId:lastId, link:linkFor(lastId), text, channel, to, sendAt:new Date(whenStr).toISOString() };
-      try{
-        if(BACKEND_URL.includes("TU_PROJECT_ID")){ // aún no configurado
-          console.log("SCHEDULE (demo):", payload);
-          toast("Programado (demo). Al activar Firebase se enviará solo ✅");
-          return;
-        }
-        const res=await fetch(`${BACKEND_URL}/schedule`, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) });
-        if(!res.ok) throw new Error(await res.text());
-        toast("Envío programado ✅");
-      }catch(e){ console.error(e); toast("No se pudo programar", false); }
+    // ===== Feedback app
+    $("appSend").onclick=()=>{
+      const r=Number($("appRate").value), t=$("appComment").value.trim();
+      const arr=JSON.parse(localStorage.getItem("cvf_app_feedback")||"[]"); arr.unshift({r,t,ts:Date.now()});
+      localStorage.setItem("cvf_app_feedback", JSON.stringify(arr)); $("appComment").value="";
+      renderAppWall(); toast("¡Gracias por tu feedback! ✅");
     };
-    $("btnCancelAuto").onclick=()=>{ $("autoChannel").value=""; $("autoTo").value=""; $("autoWhen").value=""; $("autoText").value=""; toast("Campos de automatización limpios"); };
-
-    // Ratings
-    function loadRatings(){ try{ return JSON.parse(localStorage.getItem("cvf_ratings")||"[]"); }catch{return [];} }
-    function saveRatings(arr){ localStorage.setItem("cvf_ratings", JSON.stringify(arr)); }
-    function renderStars(){
-      const wrap=$("stars"); wrap.innerHTML="";
-      const cur=Number(localStorage.getItem("cvf_my_star")||0);
-      for(let i=1;i<=5;i++){ const s=document.createElement("span"); s.textContent="★"; s.className="star"+(i<=cur?" on":""); s.onclick=()=>{ localStorage.setItem("cvf_my_star", i); renderStars(); }; wrap.appendChild(s); }
-      const arr=loadRatings(); $("avgScore").textContent=arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):"—"; $("rateCount").textContent=arr.length;
+    function renderAppWall(){
+      const arr=JSON.parse(localStorage.getItem("cvf_app_feedback")||"[]");
+      $("appWall").innerHTML = arr.slice(0,10).map(x=>`<div class="glass card p-3 border" style="border-color:var(--border)">
+        <div>${"⭐️".repeat(x.r)}</div>
+        <div class="text-sm mt-1">${x.t||""}</div>
+        <div class="text-xs opacity-70 mt-1">${new Date(x.ts).toLocaleString()}</div>
+      </div>`).join("");
     }
-    $("rateBtn").onclick=()=>{ const cur=Number(localStorage.getItem("cvf_my_star")||0); if(!cur) return toast("Elegí una estrella primero", false); const arr=loadRatings(); arr.push(cur); saveRatings(arr); renderStars(); toast("¡Gracias por calificar!"); };
-    renderStars();
 
-    // Comments
-    function loadComments(){ try{ return JSON.parse(localStorage.getItem("cvf_comments")||"[]"); }catch{return [];} }
-    function saveComments(a){ localStorage.setItem("cvf_comments", JSON.stringify(a)); }
-    function renderComments(){
-      const list=$("cList"); list.innerHTML="";
-      const arr=loadComments().slice(-20).reverse();
-      if(!arr.length){ list.innerHTML=`<div class="text-sm opacity-70">Sin comentarios aún.</div>`; return; }
-      arr.forEach(c=>{
-        const div=document.createElement("div"); div.className="p-3 rounded-xl border"; div.style.borderColor="var(--border)";
-        div.innerHTML=`<div class="text-sm font-bold" style="color:#22d3ee">${c.name||"Anónimo"} — <span class="opacity-70">${c.title||""}</span></div>
-                       <div class="text-sm mt-1">${(c.body||"").replace(/\n/g,"<br>")}</div>
-                       <div class="text-xs opacity-60 mt-1">${new Date(c.ts).toLocaleString()}</div>`;
-        list.appendChild(div);
-      });
-    }
-    $("cSend").onclick=()=>{ const name=$("cName").value.trim(), title=$("cTitle").value.trim(), body=$("cBody").value.trim(); if(!body) return toast("Escribí un comentario.", false); const arr=loadComments(); arr.push({name,title,body,ts:Date.now()}); saveComments(arr); $("cBody").value=""; renderComments(); toast("Comentario publicado"); };
-    renderComments();
+    // ===== Helpers
+    function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
-    // Routing/init
-    function defaults(){ defaultsForCreate(); }
-    function route(){ if(location.hash==="#mis") renderList(); else if(location.hash==="#social"){ renderComments(); renderStars(); } else defaults(); }
-    window.addEventListener("hashchange", route);
+    // ===== Eventos UI
+    $("btnCreate").onclick=()=>createCapsule();
+    $("btnPreview").onclick=()=>{
+      // Previsualiza sin cifrado real (sólo UI)
+      const meta={ id:"PREV", title:$("capTitle").value||"Cápsula", openAt:Date.now()+3000, mode:$("secMode").value, links:($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean) };
+      const fake = makeLinkPayload({ ...meta, iv:"", salt:"", ct:"", ghost:true });
+      openViewer(fake, "");
+    };
 
-    function init(){ load(); route(); checkDeepLink(); }
-    init();
+    // Defaults
+    (function init(){
+      const dt = new Date(Date.now()+60000); $("capOpen").value = toDTLocalValue(dt.getTime());
+      load(); renderList(); renderAppWall(); checkDeepLink();
+    })();
   })();
   </script>
 </body>
