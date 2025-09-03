@@ -3,17 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Cápsula Volver al Futuro 2.0 — Pro</title>
+  <title>Cápsula Volver al Futuro 2.0</title>
   <meta name="theme-color" content="#0ea5e9">
-  <meta name="description" content="Cápsulas cifradas con nave espacial: crea, comparte y ábrelas en la fecha. Pago Pro con Stripe.">
+  <meta name="description" content="Crea cápsulas cifradas, compártelas por enlace/QR/WhatsApp/Telegram/Email y ábrelas en la fecha.">
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Config animaciones suaves -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: { 'pulse-slow': 'pulse 3s ease-in-out infinite' }
+        }
+      }
+    }
+  </script>
 
   <!-- Tipografías -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 
   <!-- Librerías externas -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -35,116 +45,70 @@
     :root{
       --c1:#0ea5e9; --c2:#a78bfa; --fg:#e5e7eb; --mut:#94a3b8;
       --glass:#ffffff10; --glassB:#ffffff18; --bgh:#0b1220; --bg2:#0f172a;
-      --accent:#22d3ee;
     }
     [data-theme="light"]{
-      --fg:#0f172a; --mut:#475569; --glass:#0000000d; --glassB:#0000001a; --bgh:#eef2ff; --bg2:#f8fafc;
-      --accent:#0ea5e9;
+      --fg:#0f172a; --mut:#475569; --glass:#0000000d; --glassB:#0000001a; --bgh:#ecf3ff; --bg2:#eef2ff;
     }
     html,body{height:100%}
     body{
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--fg);
-      background: radial-gradient(120vmax 80vmax at 15% 10%, #0b1325 0%, var(--bgh) 40%, var(--bg2) 100%);
+      background: radial-gradient(120vmax 80vmax at 15% 10%, #111827 0%, var(--bgh) 40%, var(--bg2) 100%);
       overflow-x:hidden;
     }
+    .bg-image{
+      position:fixed; inset:0; z-index:-1;
+      background:url('./cover.jpg') center/cover no-repeat;
+      filter:blur(22px) brightness(0.6) saturate(1.1);
+      transform:scale(1.1);
+    }
     .brand{font-family:Orbitron,Inter,sans-serif;letter-spacing:.3px}
-    .glass{background:linear-gradient(180deg,var(--glass),transparent);border:1px solid var(--glassB);backdrop-filter:blur(12px); border-radius:18px; box-shadow:0 10px 40px rgba(0,0,0,.25)}
-    .btn{border:1px solid var(--glassB); padding:.7rem 1rem; border-radius:12px; font-weight:700; transition:.2s}
-    .btn:hover{transform:translateY(-1px)}
-    .btn-primary{background:linear-gradient(90deg,var(--c1),var(--c2)); color:#0b1220}
+    .glass{background:linear-gradient(180deg,var(--glass),transparent);border:1px solid var(--glassB);backdrop-filter:blur(10px); border-radius:18px; box-shadow:0 10px 40px rgba(0,0,0,.25)}
+    .btn{border:1px solid var(--glassB); padding:.7rem 1rem; border-radius:12px; font-weight:700; cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,var(--c1),var(--c2)); color:#0b1220; border:none}
     .btn-ghost{background:rgba(255,255,255,.06)}
-    .tab-btn{padding:.6rem 1rem;border-radius:999px;border:1px solid var(--glassB)}
+    .tab-btn{padding:.5rem .9rem;border-radius:999px;border:1px solid var(--glassB)}
     .active-tab{background:linear-gradient(90deg,var(--c1),var(--c2)); color:#0b1220}
-    .input,.textarea,select{width:100%; background:rgba(255,255,255,.05); border:1px solid var(--glassB); color:var(--fg); border-radius:12px; padding:.85rem}
+    .input,.textarea,select{width:100%; background:rgba(255,255,255,.05); border:1px solid var(--glassB); color:var(--fg); border-radius:12px; padding:.8rem}
     .label{font-size:.85rem;color:var(--mut);font-weight:600}
-
-    /* ========= NAVE ESPACIAL ========= */
-    .nave{
-      width:240px; height:240px; margin:0 auto; position:relative; overflow:visible;
-      filter:drop-shadow(0 12px 28px rgba(14,165,233,.25));
-      transition: transform 1.2s ease, opacity .6s ease;
-    }
-    .rocket{
-      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-      width:120px; height:180px;
-    }
-    .rocket .body{
-      position:absolute; left:50%; transform:translateX(-50%);
-      width:80px; height:120px; top:20px;
-      background:linear-gradient(180deg,#e2e8f0,#94a3b8);
-      border-radius:40px 40px 20px 20px;
-      border:1px solid rgba(255,255,255,.3);
-    }
-    .rocket .window{
-      position:absolute; left:50%; transform:translateX(-50%);
-      top:48px; width:30px; height:30px; border-radius:50%;
-      background:radial-gradient(circle at 30% 30%, #7dd3fc, #0ea5e9);
-      border:2px solid #bae6fd;
-      box-shadow:0 0 12px #07b6d4;
-    }
-    .rocket .nose{
-      position:absolute; left:50%; transform:translateX(-50%);
-      top:-6px; width:0; height:0;
-      border-left:40px solid transparent;
-      border-right:40px solid transparent;
-      border-bottom:30px solid #cbd5e1;
-      filter:drop-shadow(0 2px 2px rgba(0,0,0,.2));
-    }
-    .rocket .fin{
-      position:absolute; width:34px; height:40px; bottom:36px; background:linear-gradient(180deg,#8b5cf6,#22d3ee);
-      border:1px solid rgba(255,255,255,.35);
-    }
-    .rocket .fin.left{ left:8px; border-radius:10px 0 10px 14px; transform:skewY(8deg) }
-    .rocket .fin.right{ right:8px; border-radius:0 10px 14px 10px; transform:skewY(-8deg) }
-    .flame{
-      position:absolute; left:50%; transform:translateX(-50%); bottom:-10px;
-      width:20px; height:28px; border-radius:50% 50% 50% 50%;
-      background:radial-gradient(circle at 50% 20%, #fde047, #f97316 60%, #ef4444 90%);
-      filter:blur(0.4px);
-      animation:flame 0.14s infinite alternate;
-      box-shadow:0 0 12px #fb923c;
-    }
-    @keyframes flame{ from{ transform:translateX(-50%) scaleY(1) } to{ transform:translateX(-50%) scaleY(1.25) } }
-
-    /* Estela/warp */
-    .warp{
-      position:absolute; left:50%; transform:translateX(-50%); bottom:-40px;
-      width:4px; height:60px; background:linear-gradient(180deg, rgba(34,211,238,.9), transparent);
-      filter:blur(1px); opacity:.9; animation:warp 1.2s linear infinite;
-    }
-    .warp:before,.warp:after{
-      content:""; position:absolute; left:-8px; width:20px; height:20px; top:-12px;
-      background:radial-gradient(circle, rgba(34,211,238,.35), transparent 60%);
-      filter:blur(4px);
-    }
-    @keyframes warp{ from{ height:40px; opacity:.8 } to{ height:100px; opacity:.3 } }
-
-    /* Estados */
-    .nave.launch { transform: translateY(-260px) scale(.88) rotate(-2deg); opacity:0; }
-    .hidden{display:none}
-
-    /* Modal contenido */
+    .hidden{display:none !important}
     .open-content{animation:fadeIn .35s ease both}
     @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+    /* ===== Rocket Ship (reemplaza cofre) ===== */
+    .nave{width:280px;height:220px;margin:0 auto;position:relative;transition:transform .9s ease,opacity .6s;filter:drop-shadow(0 14px 32px rgba(14,165,233,.28))}
+    .nave.launch{transform:translateY(-280px) scale(.9) rotate(-1.5deg);opacity:0}
+    .rocket{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:170px}
+    .rocket .nose{position:absolute;left:50%;transform:translateX(-50%);top:-8px;width:0;height:0;border-left:40px solid transparent;border-right:40px solid transparent;border-bottom:34px solid #cbd5e1}
+    .rocket .body{position:absolute;left:50%;transform:translateX(-50%);top:24px;width:84px;height:118px;background:linear-gradient(180deg,#e5e7eb,#9ca3af);border-radius:42px 42px 18px 18px;border:1px solid rgba(255,255,255,.28)}
+    .rocket .window{position:absolute;left:50%;transform:translateX(-50%);top:54px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#7dd3fc,#0ea5e9);border:2px solid #bae6fd;box-shadow:0 0 12px #0ea5e9}
+    .rocket .fin{position:absolute;width:34px;height:40px;bottom:36px;background:linear-gradient(180deg,#8b5cf6,#22d3ee);border:1px solid rgba(255,255,255,.35)}
+    .rocket .fin.left{left:8px;border-radius:12px 0 12px 14px;transform:skewY(8deg)}
+    .rocket .fin.right{right:8px;border-radius:0 12px 14px 12px;transform:skewY(-8deg)}
+    .flame{position:absolute;left:50%;transform:translateX(-50%);bottom:-10px;width:20px;height:28px;border-radius:50%;background:radial-gradient(circle at 50% 20%,#fde047,#f59e0b 60%,#ef4444 95%);filter:blur(.3px);animation:flame .14s infinite alternate;box-shadow:0 0 14px #fb923c}
+    @keyframes flame{from{transform:translateX(-50%) scaleY(1)}to{transform:translateX(-50%) scaleY(1.25)}}
+    .warp{position:absolute;left:50%;transform:translateX(-50%);bottom:-44px;width:5px;height:64px;background:linear-gradient(180deg,rgba(34,211,238,.9),transparent);filter:blur(1px);opacity:.9;animation:warp 1.1s linear infinite}
+    @keyframes warp{from{height:44px;opacity:.85}to{height:110px;opacity:.35}}
   </style>
 </head>
 <body>
+  <div class="bg-image"></div>
+
   <!-- NAV -->
-  <header class="sticky top-0 backdrop-blur border-b border-white/10" style="background:linear-gradient(180deg,rgba(11,18,32,.85),transparent)">
+  <header class="sticky top-0 backdrop-blur border-b border-white/10" style="background:linear-gradient(180deg,rgba(11,18,32,.8),transparent)">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <span class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-indigo-500 grid place-items-center">🚀</span>
+        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-indigo-400 grid place-items-center">⏳</div>
         <a href="#" class="brand text-xl md:text-2xl font-extrabold">Cápsula <span class="text-cyan-300">Volver</span> <span class="text-indigo-300">al Futuro</span></a>
-        <span id="proBadge" class="hidden ml-3 text-xs px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">PRO</span>
       </div>
       <div class="flex items-center gap-2">
-        <select id="themeSel" class="input !py-2 !px-3 w-auto">
+        <select id="themeSel" class="input !py-2 !px-3 w-auto" aria-label="Cambiar tema">
           <option value="dark">Oscuro</option>
           <option value="light">Claro</option>
           <option value="auto">Auto</option>
         </select>
-        <a class="btn btn-ghost" id="btnGoPro">⭐ Pro</a>
+        <button id="btnGoPro" class="btn btn-primary">✨ Ser Pro</button>
+        <span id="badgePro" class="hidden text-xs px-2 py-1 rounded-full border border-white/15">PRO</span>
         <a class="btn btn-primary" href="#crear">Crear</a>
       </div>
     </div>
@@ -161,19 +125,15 @@
       </div>
     </div>
     <div class="glass p-6 text-center">
-      <!-- NAVE HERO -->
-      <div id="naveHero" class="nave mb-6">
+      <!-- Rocket en HERO -->
+      <div id="naveHero" class="nave mx-auto mb-6">
         <div class="rocket">
-          <div class="nose"></div>
-          <div class="body"></div>
-          <div class="window"></div>
-          <div class="fin left"></div>
-          <div class="fin right"></div>
-          <div class="flame"></div>
-          <div class="warp"></div>
+          <div class="nose"></div><div class="body"></div><div class="window"></div>
+          <div class="fin left"></div><div class="fin right"></div>
+          <div class="flame"></div><div class="warp"></div>
         </div>
       </div>
-      <div id="countHero" class="brand text-2xl text-cyan-200">00:00:10</div>
+      <div id="countHero" class="brand text-2xl text-cyan-200 animate-pulse-slow">00:00:10</div>
       <div class="text-sm text-slate-400">Demo: cuenta regresiva</div>
     </div>
   </section>
@@ -226,42 +186,9 @@
           </div>
         </div>
 
-        <!-- Tipo de cápsula (algunas son Pro) -->
-        <div class="glass p-4">
-          <div class="label">Tipo</div>
-          <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center gap-2"><input type="radio" name="capType" value="personal" checked>Personal</label>
-            <label class="flex items-center gap-2"><input type="radio" name="capType" value="video">Video Selfie <span class="text-xs text-emerald-400 hidden" id="tagVideoPro">PRO</span></label>
-            <label class="flex items-center gap-2"><input type="radio" name="capType" value="prediction">IA Predictiva <span class="text-xs text-emerald-400 hidden" id="tagIAPRO">PRO</span></label>
-            <label class="flex items-center gap-2"><input type="radio" name="capType" value="challenge">Desafío</label>
-          </div>
-        </div>
-
-        <!-- Video Selfie (Pro) -->
-        <div id="videoSection" class="hidden glass p-4">
-          <div class="label">Video Selfie</div>
-          <video id="videoPreview" class="w-full rounded border border-white/10 max-h-52" muted></video>
-          <div class="flex gap-2 mt-2">
-            <button id="startRecord" class="btn btn-primary">Grabar</button>
-            <button id="stopRecord" class="btn btn-ghost hidden">Parar</button>
-            <button id="playRecord" class="btn btn-ghost hidden">Ver</button>
-          </div>
-          <div id="recordingStatus" class="text-xs text-slate-400 mt-1"></div>
-        </div>
-
-        <!-- IA Predictiva (Pro demo local) -->
-        <div id="aiSection" class="hidden glass p-4">
-          <div class="label">IA Predictiva</div>
-          <button id="generatePrediction" class="btn btn-primary">Generar predicción</button>
-          <div id="aiPrediction" class="hidden p-3 rounded bg-white/5 border border-white/10 mt-2">
-            <div class="text-sm text-cyan-300 mb-1">Predicción:</div>
-            <div id="predictionText" class="text-sm text-slate-200"></div>
-          </div>
-        </div>
-
         <div>
-          <div class="label">Adjuntar archivo (imagen/video hasta <span id="maxSizeLabel">10</span> MB).</div>
-          <input id="capFile" type="file" accept="image/*,video/*" class="input">
+          <div class="label">Adjuntar archivo (imagen/video hasta 10/50 MB)</div>
+          <input id="capFile" type="file" accept="image/*,video/*" class="input" aria-label="Seleccionar archivo">
           <div id="fileHint" class="text-xs text-slate-400 mt-1"></div>
         </div>
 
@@ -309,8 +236,8 @@
           <div class="brand font-extrabold mb-2 text-cyan-200">Compartir</div>
           <div class="label mb-1">Enlace</div>
           <div class="flex gap-2">
-            <input id="shareLink" class="input flex-1" readonly placeholder="Se completa al guardar">
-            <button id="copyLink" class="btn btn-ghost">Copiar</button>
+            <input id="shareLink" class="input flex-1" readonly placeholder="Se completa al guardar" aria-label="Enlace de la cápsula">
+            <button id="copyLink" class="btn btn-ghost" aria-label="Copiar enlace">Copiar</button>
           </div>
           <div class="label mt-3 mb-1">QR del enlace</div>
           <div id="qr" class="flex items-center justify-center p-4 rounded-xl border border-white/10"></div>
@@ -365,9 +292,9 @@
       <ol class="list-decimal pl-5 space-y-2 text-slate-300">
         <li>Completá Título, Mensaje y Fecha (≥ +30s).</li>
         <li>Modo seguridad: <b>Clave en enlace</b> o <b>PIN</b>.</li>
-        <li>Adjuntá imagen/video (≤ <span id="maxSizeHelp">10</span> MB). Imágenes se comprimen.</li>
+        <li>Adjuntá imagen/video (≤ 10 MB; ≤ 50 MB si eres PRO). Imágenes se comprimen.</li>
         <li>Guardá → se genera <b>link</b> + <b>QR</b> + <b>WhatsApp/Telegram/Email</b>.</li>
-        <li>Al abrir el link: countdown → <b>nave despega</b> → contenido.</li>
+        <li>En otro dispositivo abrí el link: countdown → nave despega → contenido.</li>
       </ol>
     </section>
   </main>
@@ -380,26 +307,20 @@
         <button id="mClose" class="btn btn-ghost">Cerrar</button>
       </div>
       <div id="mTitle" class="brand text-2xl mt-2 text-cyan-200">Título</div>
-
-      <!-- NAVE EN MODAL -->
       <div class="flex items-center justify-center my-5">
+        <!-- Rocket en MODAL -->
         <div id="mNave" class="nave">
           <div class="rocket">
-            <div class="nose"></div>
-            <div class="body"></div>
-            <div class="window"></div>
-            <div class="fin left"></div>
-            <div class="fin right"></div>
-            <div class="flame"></div>
-            <div class="warp"></div>
+            <div class="nose"></div><div class="body"></div><div class="window"></div>
+            <div class="fin left"></div><div class="fin right"></div>
+            <div class="flame"></div><div class="warp"></div>
           </div>
         </div>
       </div>
-
       <div id="mCountdown" class="brand text-3xl text-cyan-200 text-center mb-3">00:00:00</div>
       <div id="mPINwrap" class="hidden mb-3">
         <div class="label">Ingresá PIN</div>
-        <input id="mPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="••••">
+        <input id="mPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="••••" aria-label="PIN">
       </div>
 
       <div id="mContent" class="hidden open-content space-y-3">
@@ -418,26 +339,6 @@
   <div id="toasts" class="fixed bottom-4 right-4 grid gap-2 z-50"></div>
 
   <script>
-  /* ============ Pago Pro (Stripe Payment Link) ============ */
-  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/xxxxxxxxxxxx"; // <-- Pega aquí tu Payment Link
-  const isPro = ()=> localStorage.getItem('isPro') === '1';
-  function setProUI(){
-    document.getElementById('proBadge').classList.toggle('hidden', !isPro());
-    document.getElementById('tagVideoPro').classList.toggle('hidden', !isPro());
-    document.getElementById('tagIAPRO').classList.toggle('hidden', !isPro());
-    document.getElementById('maxSizeLabel').textContent = isPro()? '50':'10';
-    document.getElementById('maxSizeHelp').textContent = isPro()? '50':'10';
-  }
-  // Activación automática si vuelve con ?pro=ok
-  (function handleProReturn(){
-    const sp = new URLSearchParams(location.search);
-    if(sp.get('pro')==='ok'){ localStorage.setItem('isPro','1'); history.replaceState({},'',location.pathname); }
-    setProUI();
-  })();
-  document.getElementById('btnGoPro').addEventListener('click', ()=>{
-    window.open(STRIPE_PAYMENT_LINK, '_blank');
-  });
-
   /* ================== Helpers ================== */
   const $  = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
@@ -464,6 +365,28 @@
       localStorage.setItem('theme', sel.value);
     });
   })();
+
+  /* ================== PRO / Stripe Payment Link ================== */
+  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/REEMPLAZA_CON_TU_LINK"; // ← tu link
+  const PRO_FEATURES = { maxUploadMB: 50 };
+  function isPro(){ return localStorage.getItem('isPro')==='1'; }
+  function applyProUI(){
+    const badge = $('#badgePro');
+    const btn = $('#btnGoPro');
+    if(isPro()){ badge.classList.remove('hidden'); btn.classList.add('hidden'); }
+    else{ badge.classList.add('hidden'); btn.classList.remove('hidden'); }
+  }
+  $('#btnGoPro').addEventListener('click', ()=>{
+    window.open(STRIPE_PAYMENT_LINK,'_blank','noopener');
+    toast('Abriendo pago seguro…');
+  });
+  // Auto-activar si volvemos con ?pro=ok
+  if(new URLSearchParams(location.search).get('pro')==='ok'){
+    localStorage.setItem('isPro','1');
+    history.replaceState({},'',location.pathname);
+    toast('¡Gracias! Plan PRO activado ✅');
+  }
+  applyProUI();
 
   /* ================== Tabs ================== */
   $$('.tab-btn').forEach(b=>{
@@ -561,7 +484,7 @@
       .replace(/\n/g,'<br>');
   }
 
-  /* ================== Imagen comprimida ================== */
+  /* ================== Img -> DataURL comprimido ================== */
   async function imageToDataUrl(file){
     return new Promise((res,rej)=>{
       const img = new Image();
@@ -582,72 +505,27 @@
     });
   }
 
-  /* ================== Video selfie (grabación) ================== */
-  let mediaStream = null, mediaRecorder = null, recordedBlobs = [];
-  async function startVideo(){
-    try{
-      mediaStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-      $('#videoPreview').srcObject = mediaStream;
-      $('#videoPreview').play();
-    }catch(e){ toast('Permiso de cámara/micrófono denegado'); }
-  }
-  function stopVideo(){
-    mediaStream?.getTracks()?.forEach(t=>t.stop());
-    $('#videoPreview').srcObject = null;
-  }
-  $('#startRecord').addEventListener('click', async ()=>{
-    if(!isPro()){ toast('Función Pro'); return; }
-    await startVideo();
-    recordedBlobs = [];
-    mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm;codecs=vp9' });
-    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedBlobs.push(e.data); };
-    mediaRecorder.onstop = ()=>{ stopVideo(); $('#playRecord').classList.remove('hidden'); };
-    mediaRecorder.start(200);
-    $('#recordingStatus').textContent='Grabando…';
-    $('#startRecord').classList.add('hidden');
-    $('#stopRecord').classList.remove('hidden');
-  });
-  $('#stopRecord').addEventListener('click', ()=>{
-    mediaRecorder?.stop();
-    $('#recordingStatus').textContent='Grabación lista';
-    $('#stopRecord').classList.add('hidden');
-    $('#startRecord').classList.remove('hidden');
-  });
-  $('#playRecord').addEventListener('click', ()=>{
-    if(!recordedBlobs.length) return;
-    const blob = new Blob(recordedBlobs,{type:'video/webm'});
-    $('#videoPreview').srcObject = null;
-    $('#videoPreview').src = URL.createObjectURL(blob);
-    $('#videoPreview').controls = true;
-    $('#videoPreview').play();
-  });
-
-  /* ================== UI dinámicas por tipo ================== */
+  /* ================== Crear cápsula ================== */
   const pinWrap = $('#pinWrap');
   $('#capSec').addEventListener('change', ()=> {
     pinWrap.classList.toggle('hidden', $('#capSec').value!=='pin');
   });
-  function updateTypeUI(){
-    const v = (document.querySelector('input[name="capType"]:checked')||{}).value;
-    $('#videoSection').classList.toggle('hidden', v!=='video');
-    $('#aiSection').classList.toggle('hidden', v!=='prediction');
-  }
-  $$('input[name="capType"]').forEach(r=> r.addEventListener('change', updateTypeUI));
-  updateTypeUI();
 
-  /* ================== Archivo seleccionado ================== */
   $('#capFile').addEventListener('change', async (e)=>{
     const f = e.target.files[0];
     if(!f){ $('#fileHint').textContent=''; return; }
-    const limitMB = isPro()? 50 : 10;
-    if(f.size > limitMB*1024*1024){ $('#fileHint').textContent=`Archivo >${limitMB}MB. Sube a Drive/YouTube o consigue Pro.`; e.target.value=''; return; }
+    const PRO_LIMIT = isPro()? PRO_FEATURES.maxUploadMB : 10;
+    if(f.size > PRO_LIMIT*1024*1024){
+      $('#fileHint').textContent=`Archivo >${PRO_LIMIT}MB. Sube de plan o usa enlace (Drive/YouTube).`;
+      e.target.value=''; return;
+    }
     if(f.type.startsWith('image/')) $('#fileHint').textContent='Imagen: se comprimirá.';
     else if(f.type.startsWith('video/')) $('#fileHint').textContent='Video: si es grande, usar YouTube/Drive.';
     else $('#fileHint').textContent='Tipo soportado.';
   });
 
-  /* ================== Crear cápsula ================== */
   let lastShareUrl = '';
+
   $('#btnCreate').addEventListener('click', async ()=>{
     try{
       const title = $('#capTitle').value.trim();
@@ -664,14 +542,6 @@
         if(!/^\d{4,8}$/.test(pin)){ toast('PIN de 4 a 8 dígitos.'); return; }
       }
 
-      // Tipo / IA
-      const capType = (document.querySelector('input[name="capType"]:checked')||{}).value || 'personal';
-      let predictionText = null;
-      if(capType==='prediction'){
-        if(!isPro()){ toast('IA Predictiva es Pro'); return; }
-        predictionText = $('#predictionText').textContent || 'Predicción local de ejemplo: tu disciplina atraerá oportunidades significativas.';
-      }
-
       // Adjuntos
       let filePack = null;
       const f = $('#capFile').files[0];
@@ -681,25 +551,17 @@
           filePack = {name:f.name, type:'image/jpeg', dataUrl};
         }else if(f.type.startsWith('video/')){
           const buf = await f.arrayBuffer();
-          if(buf.byteLength <= (isPro()? 50:10)*1024*1024){
+          if(buf.byteLength <= 1.5*1024*1024){
             filePack = {name:f.name, type:f.type, dataUrl:'data:'+f.type+';base64,'+Crypto.b64e(buf)};
           }else{
             filePack = {name:f.name, type:f.type, dataUrl:null, note:'Video grande: usar enlace (YouTube/Drive).'};
           }
         }
       }
-      // Video selfie si no se usó file input
-      if(!filePack && capType==='video' && recordedBlobs.length){
-        if(!isPro()){ toast('Video selfie es Pro'); return; }
-        const blob = new Blob(recordedBlobs,{type:'video/webm'});
-        const buffer = await blob.arrayBuffer();
-        filePack = {name:'video_selfie.webm', type:'video/webm', dataUrl:'data:video/webm;base64,'+Crypto.b64e(buffer)};
-      }
-
       const links = $('#capLinks').value.split(',').map(s=>s.trim()).filter(Boolean);
 
       // Base de contenido cifrado
-      const plainBase = {title, message, file:filePack, links, type:capType, prediction:predictionText};
+      const plainBase = {title, message, file:filePack, links};
 
       // Recurrencia
       const recur = $('#capRecur').value;
@@ -727,15 +589,11 @@
       for(const dt of series){
         const secMode = (sec==='pin')?'pin':'link';
         let localKey=null, localPin=null;
-        if(secMode==='pin'){
-          localPin = pin;
-        } else {
-          localKey = await Crypto.genKey();
-        }
+        if(secMode==='pin'){ localPin = pin; } else { localKey = await Crypto.genKey(); }
 
         const encPack = await Crypto.encryptJson(plainBase, secMode, secMode==='pin'?localPin:localKey);
         const cap = {
-          id: 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+          id: crypto.randomUUID(),
           title,
           openAt: dt.toISOString(),
           tz: $('#capTZ').value,
@@ -748,6 +606,7 @@
 
         // Link portable
         const payload = {v:1, id:cap.id, openAt:cap.openAt, tz:cap.tz, sec:cap.sec, enc:cap.enc};
+        if(filePack && filePack.dataUrl && filePack.type.startsWith('image/')) payload.thumb = filePack.dataUrl;
         const packed = LZString.compressToEncodedURIComponent(JSON.stringify(payload));
         let hash = `#d=${packed}`; if(cap.sec==='link' && cap.k) hash += `&k=${encodeURIComponent(cap.k)}`;
         const base = location.href.split('#')[0].split('?')[0];
@@ -773,15 +632,16 @@
   $('#waBtn').addEventListener('click', ()=>{
     if(!$('#shareLink').value){ toast('Guardá la cápsula primero.'); return; }
     const msg = `${$('#waText').value}\n${$('#shareLink').value}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank','noopener');
   });
 
   $('#tgBtn').addEventListener('click', ()=>{
     const url = $('#shareLink').value;
     if(!url){ toast('Guardá la cápsula primero.'); return; }
     const text = $('#waText').value || 'Abrí mi cápsula del tiempo ⏳✨';
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank');
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener');
   });
+
   $('#mailBtn').addEventListener('click', ()=>{
     const url = $('#shareLink').value;
     if(!url){ toast('Guardá la cápsula primero.'); return; }
@@ -832,7 +692,7 @@
         <div class="text-sm text-slate-400 mb-2">Se abre: ${fmt(c.openAt)}</div>
         <div class="flex gap-2">
           <button class="btn btn-ghost" data-act="open" data-id="${c.id}">Abrir</button>
-          <button class="btn btn-ghost" data-act="share" data-id="${c.id}">Link</button>
+          <button class="btn btn-ghost" data-act="share" data-id="${c.id}" aria-label="Copiar enlace">Link</button>
           <button class="btn btn-ghost" data-act="del" data-id="${c.id}">Eliminar</button>
         </div>`;
       box.appendChild(card);
@@ -863,7 +723,7 @@
     if(act==='open'){ openModal(cap); }
   });
 
-  /* ================== Modal / apertura (Nave) ================== */
+  /* ================== Modal / apertura ================== */
   const modal = $('#modal');
   $('#mClose').addEventListener('click', ()=> modal.classList.add('hidden'));
 
@@ -896,8 +756,7 @@
     const opener = async ()=>{
       if(Date.now()<target){ toast('Aún no se puede abrir.'); return; }
       clearInterval(iv);
-      // Despegue
-      nave.classList.add('launch');
+      nave.classList.add('launch'); // 🚀 despega
       setTimeout(()=>{ nave.parentElement.classList.add('hidden'); }, 900);
       await openContent(cap);
     };
@@ -918,7 +777,7 @@
       }
       const plain = await Crypto.decryptJson(cap.enc, keyMode, keyOrPin);
       showDecrypted(plain);
-      confetti({particleCount:200,spread:120,origin:{y:.6}});
+      confetti({particleCount:160,spread:100,origin:{y:.6}});
       if(cap.id && DB.get(cap.id)){ DB.markOpened(cap.id); renderMetrics(); }
     }catch(e){ console.error(e); toast('No se pudo descifrar.'); }
   }
@@ -931,7 +790,7 @@
       const src = plain.file.dataUrl || plain.file.url;
       if((plain.file.type||'').startsWith('image/')){
         const img = document.createElement('img');
-        img.src = src; img.className='max-h-[420px] w-full object-contain rounded-xl border border-white/10';
+        img.src = src; img.alt = 'Imagen adjunta'; img.className='max-h-[420px] w-full object-contain rounded-xl border border-white/10';
         media.appendChild(img);
       }else if((plain.file.type||'').startsWith('video/')){
         const v = document.createElement('video');
@@ -952,25 +811,16 @@
       });
       links.appendChild(ul);
     }
-    // Si hay predicción (Pro)
-    if(plain.prediction){
-      const box = document.createElement('div');
-      box.className = 'p-3 rounded-xl border border-white/10 bg-white/5';
-      box.innerHTML = `<div class="text-sm text-emerald-300 mb-1">IA dijo:</div><div class="text-sm">${mdSafe(plain.prediction)}</div>`;
-      media.appendChild(box);
-    }
   }
 
-  // Previsualización inmediata
+  // Previsualización inmediata (sin esperar fecha)
   async function openModalPreview(){
     try{
       const title = $('#capTitle').value.trim() || 'Vista previa';
       const message = $('#capMsg').value.trim() || '…';
       const sec = $('#capSec').value;
-      const capType = (document.querySelector('input[name="capType"]:checked')||{}).value || 'personal';
 
       let filePack = null;
-      // de file input
       const f = $('#capFile').files[0];
       if(f){
         if(f.type.startsWith('image/')){
@@ -978,27 +828,20 @@
           filePack = {name:f.name, type:'image/jpeg', dataUrl};
         }else if(f.type.startsWith('video/')){
           const buf = await f.arrayBuffer();
-          const lim = (isPro()? 50:10)*1024*1024;
-          if(buf.byteLength <= lim){
+          if(buf.byteLength <= 1.5*1024*1024){
             filePack = {name:f.name, type:f.type, dataUrl:'data:'+f.type+';base64,'+Crypto.b64e(buf)};
+          }else{
+            filePack = {name:f.name, type:f.type, dataUrl:null, note:'(Preview) Video grande no embebido.'};
           }
         }
       }
-      // o de video selfie
-      if(!filePack && capType==='video' && recordedBlobs.length){
-        if(!isPro()){ toast('Video selfie es Pro'); return; }
-        const blob = new Blob(recordedBlobs,{type:'video/webm'});
-        const buf = await blob.arrayBuffer();
-        filePack = {name:'video_selfie.webm', type:'video/webm', dataUrl:'data:video/webm;base64,'+Crypto.b64e(buf)};
-      }
-
       const links = $('#capLinks').value.split(',').map(s=>s.trim()).filter(Boolean);
-      const prediction = capType==='prediction' ? ($('#predictionText').textContent || 'Predicción de ejemplo…') : null;
 
       let rawKey=null, pin=null;
-      if (sec==='pin') pin = $('#capPIN').value.trim() || '1234'; else rawKey = await Crypto.genKey();
+      if (sec==='pin') { pin = $('#capPIN').value.trim() || '1234'; }
+      else { rawKey = await Crypto.genKey(); }
 
-      const plain = { title, message, file:filePack, links, type:capType, prediction };
+      const plain = { title, message, file:filePack, links };
       const encPack = await Crypto.encryptJson(plain, sec==='pin'?'pin':'link', sec==='pin'?pin:rawKey);
 
       const cap = {
@@ -1053,12 +896,13 @@
       const sp = new URLSearchParams(location.hash.slice(1));
       const data = sp.get('d'); if(!data) return;
       const payload = JSON.parse(LZString.decompressFromEncodedURIComponent(data));
+      // payload: {v, id, openAt, tz, sec, enc, thumb?}
       openModal(payload);
       $('#mOpen').classList.toggle('hidden', Date.now()<new Date(payload.openAt).getTime());
     }catch(e){ console.error(e); }
   })();
 
-  /* ================== Hero demo (nave despega) ================== */
+  /* ================== Hero demo (nave) ================== */
   (function heroDemo(){
     const nave = $('#naveHero');
     if(!nave) return;
@@ -1071,33 +915,19 @@
       el.textContent = `00:${m}:${ss}`;
       if(s<=0){
         clearInterval(iv);
-        nave.classList.add('launch');
-        setTimeout(()=> {
-          confetti({particleCount:120,spread:80,origin:{y:.6}});
-        }, 700);
+        nave.classList.add('launch'); // 🚀 despega
+        setTimeout(()=>{ confetti({particleCount:100,spread:70,origin:{y:.6}}); }, 700);
       }
     }, 1000);
   })();
 
-  /* ================== IA Predictiva (demo local) ================== */
-  $('#generatePrediction').addEventListener('click', ()=>{
-    if(!isPro()){ toast('Función Pro'); return; }
-    const base = $('#capMsg').value.trim() || 'Tu constancia actual';
-    const candidates = [
-      `${base} se convertirá en logros concretos y mejoras notables en tu bienestar.`,
-      `Recibirás una oportunidad inesperada que armoniza con tus metas actuales.`,
-      `Harás un cambio de rumbo positivo que te permitirá crecer con más libertad.`,
-      `Tu círculo cercano se fortalecerá y te empujará a un nuevo desafío creativo.`
-    ];
-    const t = candidates[Math.floor(Math.random()*candidates.length)];
-    $('#predictionText').textContent = t;
-    $('#aiPrediction').classList.remove('hidden');
-    toast('Predicción generada ✨');
-  });
-
   /* ================== Export/Import ================== */
   $('#btnExport').addEventListener('click', () => {
-    const data = { version: '2.0', exported: new Date().toISOString(), capsules: DB.all() };
+    const data = {
+      version: '2.0',
+      exported: new Date().toISOString(),
+      capsules: DB.all()
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1119,7 +949,9 @@
       } else {
         toast('Formato de backup inválido');
       }
-    } catch (e) { toast('Error al importar backup'); }
+    } catch (err) {
+      toast('Error al importar backup');
+    }
     e.target.value = '';
   });
 
@@ -1128,6 +960,29 @@
     renderMyCaps();
     renderTpls();
   });
+
+  // Auto-guardado de borrador
+  setInterval(() => {
+    const formData = {
+      title: $('#capTitle').value,
+      message: $('#capMsg').value,
+      openAt: $('#capOpenAt').value,
+      links: $('#capLinks').value
+    };
+    localStorage.setItem('draftCapsule', JSON.stringify(formData));
+  }, 30000);
+
+  // Restaurar borrador
+  const draft = localStorage.getItem('draftCapsule');
+  if (draft) {
+    try {
+      const data = JSON.parse(draft);
+      if (data.title) $('#capTitle').value = data.title;
+      if (data.message) $('#capMsg').value = data.message;
+      if (data.openAt) $('#capOpenAt').value = data.openAt;
+      if (data.links) $('#capLinks').value = data.links;
+    } catch (e) { /* ignore */ }
+  }
   </script>
 </body>
 </html>
