@@ -3,14 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cápsula Volver al Futuro — Futurista PRO</title>
+  <title>Cápsula Volver al Futuro — PRO Full</title>
   <meta name="theme-color" content="#0ea5e9">
+  <meta name="description" content="Crea cápsulas cifradas con mensaje, archivos y fecha. Comparte por enlace, QR, WhatsApp, Telegram o Email.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="grok_image_qtfpp7.jpg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="grok_image_qtfpp7.jpg">
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Libs -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Firebase (opcional). Si no completás config, funciona con Data URL cifrada -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script>
+    // ===== RELLENAR si querés subir a Firebase Storage =====
+    const firebaseConfig = {
+      apiKey: "",              // p.ej "AIzaSy...."
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",       // p.ej "tu-proyecto.appspot.com"
+      messagingSenderId: "",
+      appId: ""
+    };
+    let storage = null;
+    if (firebaseConfig.apiKey) {
+      firebase.initializeApp(firebaseConfig);
+      storage = firebase.storage();
+      console.log("Firebase inicializado: subidas a Storage ACTIVAS");
+    } else {
+      console.log("Sin Firebase: se usará Data URL cifrada (modo local)");
+    }
+  </script>
 
   <style>
     :root{
@@ -20,8 +52,8 @@
       --bg-photo:url('grok_image_qtfpp7.jpg');
     }
     [data-theme="light"]{
-      --bg1:#eef2f7; --bg2:#e7ecf5; --fg:#0f172a; --muted:#475569;
-      --panel:#ffffffE6; --panel2:#ffffffF8; --border:rgba(0,0,0,.12);
+      --bg1:#eef2f7; --bg2:#e7ecf5; --fg:#0f172a; --muted:#334155;
+      --panel:#ffffff; --panel2:#ffffff; --border:rgba(0,0,0,.12);
       --glow1:#0ea5e9; --glow2:#6366f1; --accent:#0ea5e9;
     }
     html,body{height:100%}
@@ -39,7 +71,7 @@
     body::after{ content:""; position:fixed; inset:0; z-index:-1;
       background:radial-gradient(60% 60% at 15% 10%,rgba(0,0,0,.25),rgba(0,0,0,.6)); }
     [data-theme="light"] body::after{
-      background:radial-gradient(60% 60% at 15% 10%,rgba(255,255,255,.25),rgba(255,255,255,.7));
+      background:radial-gradient(60% 60% at 15% 10%,rgba(255,255,255,.2),rgba(255,255,255,.7));
     }
 
     .glass{background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--border); backdrop-filter:blur(10px)}
@@ -47,17 +79,20 @@
     .btn{border-radius:.9rem; padding:.7rem 1rem; border:1px solid var(--border); transition:transform .08s ease}
     .btn:active{transform:translateY(1px) scale(.99)}
     .btn-primary{background:linear-gradient(90deg,var(--glow1),var(--glow2)); color:#0b1220; font-weight:800}
-    .input,.textarea,select{width:100%; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:.9rem; padding:.8rem; color:var(--fg)}
+    .input,.textarea,select{width:100%; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:.9rem; padding:.8rem; color:var(--fg)}
     [data-theme="light"] .input,[data-theme="light"] .textarea,[data-theme="light"] select{ background:#fff; color:#0f172a }
     .pill{font-size:.72rem; background:rgba(255,255,255,.06); color:var(--muted); padding:.25rem .6rem; border-radius:999px; border:1px solid var(--border)}
     .toast{position:fixed; bottom:18px; right:18px; z-index:9999; display:grid; gap:8px}
     .hidden{display:none}
+    .preview{display:flex; gap:.5rem; flex-wrap:wrap}
+    .preview > div{border:1px solid var(--border); border-radius:.7rem; padding:.4rem .6rem; background:rgba(255,255,255,.04); font-size:.8rem}
 
-    /* Cofre 3D simple */
+    /* Cofre */
     .cofre{width:280px;height:165px;position:relative;margin:0 auto;filter:drop-shadow(0 10px 25px rgba(34,211,238,.25))}
     .cofre .base{position:absolute;inset:auto 0 0 0;height:70%;background:linear-gradient(180deg,#8b5e34,#b08968);border-radius:0 0 16px 16px;box-shadow:inset 0 10px 0 rgba(0,0,0,.25)}
     .cofre .tapa{position:absolute;inset:0 0 auto 0;height:60%;background:linear-gradient(180deg,#deb887,#a67c52);border-radius:16px 16px 10px 10px;transform-origin:top center;transition:transform .9s cubic-bezier(.2,.8,.2,1);box-shadow:inset 0 -10px 0 rgba(0,0,0,.25)}
     .cofre.open .tapa{transform:rotateX(72deg)}
+    .kbd{font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;background:#111827;border:1px solid #374151;padding:.2rem .45rem;border-radius:.375rem;font-size:.75rem}
   </style>
 </head>
 <body>
@@ -79,15 +114,15 @@
   <!-- HERO -->
   <section class="max-w-6xl mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-6 items-center">
     <div class="glass card p-6 md:p-8">
-      <div class="pill mb-2">E2EE • QR • WhatsApp • Telegram • Geo-Unlock</div>
+      <div class="pill mb-2">E2EE • Adjuntos • QR • WhatsApp • Telegram</div>
       <h1 class="text-3xl md:text-4xl font-extrabold mb-2" data-i18n="title">Guarda hoy. Descubre mañana.</h1>
-      <p class="opacity-90" data-i18n="subtitle">Cápsulas con cifrado de extremo a extremo, apertura por fecha y (opcional) ubicación. Comparte por enlace, QR, WhatsApp o Telegram.</p>
+      <p class="opacity-90" data-i18n="subtitle">Crea cápsulas cifradas con fecha y ubicación opcional. Adjunta fotos, videos y audio. Comparte con enlace, QR, WhatsApp o Telegram.</p>
       <div class="mt-4 rounded-2xl overflow-hidden border" style="border-color:var(--border)">
         <img src="grok_image_qtfpp7.jpg" alt="Key / fondo" class="w-full h-56 md:h-72 object-cover">
       </div>
     </div>
     <div class="glass card p-6 md:p-8">
-      <h3 class="font-extrabold mb-3 text-cyan-200">Ideas virales (1-tap)</h3>
+      <h3 class="font-extrabold mb-3 text-cyan-200">Ideas 1-tap</h3>
       <div class="grid grid-cols-2 gap-3">
         <button class="btn" data-preset="birthday">🎂 Cumple programado</button>
         <button class="btn" data-preset="premiere">🎬 Estreno YouTube</button>
@@ -103,7 +138,6 @@
 
   <!-- MAIN -->
   <main class="max-w-6xl mx-auto p-4 md:p-8 grid gap-6">
-    <!-- Crear -->
     <section id="crear" class="glass card p-6 md:p-8">
       <h2 class="text-2xl font-extrabold mb-4">Crear nueva cápsula</h2>
       <div class="grid md:grid-cols-2 gap-8">
@@ -112,16 +146,15 @@
           <div><label class="text-sm opacity-80">Mensaje *</label><textarea id="capMessage" class="textarea h-40" placeholder="Escribe tu mensaje"></textarea></div>
           <div class="grid grid-cols-2 gap-3">
             <div><label class="text-sm opacity-80">Fecha y hora *</label><input id="capOpen" type="datetime-local" class="input"></div>
-            <div><label class="text-sm opacity-80">PIN (si elegís Modo PIN)</label><input id="capPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="4–6"></div>
+            <div><label class="text-sm opacity-80">PIN (si Modo PIN)</label><input id="capPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="4–6"></div>
           </div>
 
-          <!-- Seguridad -->
           <div class="grid md:grid-cols-2 gap-3">
             <div>
               <label class="text-sm opacity-80">Seguridad</label>
               <select id="secMode" class="input">
-                <option value="link">Link secreto (clave en #k=)</option>
-                <option value="pin">PIN (deriva la clave del PIN)</option>
+                <option value="link">Link secreto (#k)</option>
+                <option value="pin">PIN (derivación)</option>
               </select>
             </div>
             <div>
@@ -134,9 +167,20 @@
             </div>
           </div>
 
-          <!-- Adjuntos por URL -->
+          <!-- Adjuntos -->
           <div>
-            <label class="text-sm opacity-80">Adjuntos por URL (YouTube/Drive/Imagen/Video)</label>
+            <label class="text-sm opacity-80">Adjuntar archivos (imagen/video/audio)</label>
+            <input id="capFiles" class="input" type="file" multiple accept="image/*,video/*,audio/*">
+            <div id="dropZone" class="mt-2 rounded-xl border-dashed border-2 p-4 text-center" style="border-color:var(--border)">
+              Arrastrá y soltá archivos aquí (o usa el selector)
+            </div>
+            <div class="text-xs opacity-70 mt-1">Sin Firebase: Data URL cifrada (≈4 MB c/u). Con Firebase: sube a Storage (links livianos).</div>
+            <div id="filePreview" class="preview mt-2"></div>
+          </div>
+
+          <!-- Adjuntos por URL (opcional) -->
+          <div>
+            <label class="text-sm opacity-80">Adjuntos por URL</label>
             <input id="capLinks" class="input" placeholder="URL 1, URL 2, ...">
           </div>
 
@@ -144,12 +188,15 @@
             <button id="btnCreate" class="btn btn-primary">Guardar cápsula</button>
             <button id="btnPreview" class="btn">Previsualizar</button>
           </div>
-          <p class="text-xs opacity-70">* Campos obligatorios. Sin backend: los datos viajan en el enlace cifrados.</p>
+          <p class="text-xs opacity-70">* Todo se cifra en el navegador.</p>
         </div>
 
         <div class="space-y-4">
           <div class="p-4 glass card">
             <h3 class="font-extrabold mb-3 text-cyan-200">Compartir</h3>
+            <div class="text-xs mb-2 px-3 py-2 rounded-lg border" style="border-color:var(--border);background:rgba(255,255,255,.04)">
+              <b>El envío AUTOMÁTICO</b> (programado) se activa en <b>Firebase – Parte 2</b>. Hoy tenés link/QR/WA/Telegram/Email listos.
+            </div>
             <div>
               <div class="text-sm opacity-80 mb-1">QR del enlace</div>
               <div id="qrPreview" class="flex items-center justify-center p-4 rounded-xl border" style="background:var(--panel);border-color:var(--border)"></div>
@@ -161,14 +208,15 @@
                 <button id="copyLinkBtn" class="btn">Copiar</button>
               </div>
             </div>
-            <div class="mt-3 flex gap-2">
+            <div class="mt-3 flex gap-2 flex-wrap">
               <button id="waBtn" class="btn btn-primary">WhatsApp</button>
               <button id="tgBtn" class="btn">Telegram</button>
+              <button id="mailBtn" class="btn">Email</button>
+              <button id="nativeBtn" class="btn">Compartir (nativo)</button>
               <button id="icsBtn" class="btn">Descargar .ics</button>
             </div>
           </div>
 
-          <!-- Series (curso drip) -->
           <div class="p-4 glass card">
             <h3 class="font-extrabold mb-3 text-cyan-200">Creador de series</h3>
             <div class="grid grid-cols-3 gap-3">
@@ -182,32 +230,13 @@
       </div>
     </section>
 
-    <!-- Mis cápsulas + ranking -->
+    <!-- Mis cápsulas -->
     <section id="mis" class="glass card p-6 md:p-8">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-extrabold">Mis cápsulas</h2>
         <input id="search" class="input max-w-xs" placeholder="Buscar por título…">
       </div>
       <div id="myList" class="grid md:grid-cols-2 gap-4"></div>
-
-      <div class="mt-6">
-        <h3 class="font-extrabold text-cyan-200 mb-2">Tendencias (local)</h3>
-        <div id="topList" class="grid md:grid-cols-3 gap-3"></div>
-      </div>
-    </section>
-
-    <!-- Feedback app -->
-    <section class="glass card p-6 md:p-8">
-      <h3 class="font-extrabold mb-2">Califica la app</h3>
-      <div class="flex items-center gap-2">
-        <select id="appRate" class="input" style="width:auto">
-          <option value="5">⭐️⭐️⭐️⭐️⭐️</option><option value="4">⭐️⭐️⭐️⭐️</option>
-          <option value="3">⭐️⭐️⭐️</option><option value="2">⭐️⭐️</option><option value="1">⭐️</option>
-        </select>
-        <input id="appComment" class="input flex-1" placeholder="Tu comentario">
-        <button id="appSend" class="btn btn-primary">Enviar</button>
-      </div>
-      <div id="appWall" class="grid md:grid-cols-2 gap-3 mt-3"></div>
     </section>
   </main>
 
@@ -224,26 +253,23 @@
         <div id="mTitle" class="text-2xl font-extrabold text-cyan-200">Título</div>
       </div>
 
-      <!-- Cofre (desaparece al abrir) -->
+      <!-- Cofre -->
       <div id="mChestWrap" class="flex items-center justify-center my-5">
         <div id="mChest" class="cofre"><div class="tapa"></div><div class="base"></div></div>
       </div>
 
       <div id="mCountdown" class="text-3xl font-extrabold text-cyan-200 text-center mb-3">00:00:00</div>
 
-      <!-- PIN si modo PIN -->
       <div id="mPINwrap" class="hidden mb-3">
         <label class="text-sm opacity-80">Ingresá PIN</label>
         <input id="mPIN" class="input" inputmode="numeric" pattern="[0-9]*" placeholder="4–6">
       </div>
 
-      <!-- Check geolocalización si aplica -->
       <div id="mGEOWrap" class="hidden mb-3 text-sm opacity-90">
         Esta cápsula requiere estar en la ubicación configurada. <button id="geoCheck" class="btn">Verificar ubicación</button>
         <div id="geoResult" class="text-xs opacity-70 mt-1"></div>
       </div>
 
-      <!-- Contenido grande -->
       <div id="mContent" class="hidden space-y-3">
         <div class="flex items-center justify-between">
           <button id="likeBtn" class="btn">💜 <span id="likeCount">0</span></button>
@@ -251,8 +277,6 @@
         </div>
         <div id="mMessage" class="p-4 rounded-xl border text-lg leading-relaxed" style="background:var(--panel);border-color:var(--border)">...</div>
         <div id="mLinks" class="grid gap-3"></div>
-
-        <!-- Comentarios locales -->
         <div>
           <h4 class="font-bold mb-2">Comentarios</h4>
           <div id="cList" class="grid gap-2 mb-2"></div>
@@ -273,7 +297,9 @@
     </div>
   </div>
 
-  <!-- Toasts -->
+  <!-- Botón instalar PWA -->
+  <button id="installBtn" class="hidden fixed bottom-4 right-4 btn btn-primary z-50">Instalar app</button>
+
   <div id="toasts" class="toast"></div>
 
   <script>
@@ -282,10 +308,10 @@
     const els = (s,root=document)=>Array.from(root.querySelectorAll(s));
     const LSKEY="cvf_capsules";
 
-    // ===== i18n mínimo
+    // ===== i18n
     const I18N = {
-      es:{ title:"Guarda hoy. Descubre mañana.", subtitle:"Cápsulas con cifrado de extremo a extremo, apertura por fecha y (opcional) ubicación. Comparte por enlace, QR, WhatsApp o Telegram." },
-      en:{ title:"Save today. Unlock tomorrow.", subtitle:"End-to-end encrypted capsules, time-locked and optionally geo-locked. Share via link, QR, WhatsApp or Telegram." }
+      es:{ title:"Guarda hoy. Descubre mañana.", subtitle:"Crea cápsulas cifradas con fecha y ubicación opcional. Adjunta fotos, videos y audio. Comparte con enlace, QR, WhatsApp o Telegram." },
+      en:{ title:"Save today. Unlock tomorrow.", subtitle:"Create encrypted capsules with time lock and optional geo lock. Attach photos, videos and audio. Share via link, QR, WhatsApp or Telegram." }
     };
     function setLang(l){ localStorage.setItem("cvf_lang", l); const t=I18N[l]||I18N.es; els("[data-i18n]").forEach(n=>{ const k=n.getAttribute("data-i18n"); if(t[k]) n.textContent=t[k]; }); }
     const lang = localStorage.getItem("cvf_lang") || "es"; $("langSel").value = lang; setLang(lang);
@@ -297,6 +323,22 @@
     $("themeSel").value = theme;
     $("themeSel").onchange = ()=>{ localStorage.setItem("cvf_theme", $("themeSel").value); document.documentElement.setAttribute("data-theme", $("themeSel").value); };
 
+    // ===== SW + install
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
+    let deferredPrompt=null;
+    const installBtn=document.getElementById("installBtn");
+    window.addEventListener("beforeinstallprompt",(e)=>{
+      e.preventDefault(); deferredPrompt=e; installBtn.classList.remove("hidden");
+    });
+    installBtn?.addEventListener("click", async ()=>{
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice; deferredPrompt=null;
+      installBtn.classList.add("hidden");
+    });
+
     // ===== Toast
     function toast(msg, ok=true){
       const box = $("toasts"); const div = document.createElement("div");
@@ -305,71 +347,147 @@
       box.appendChild(div); setTimeout(()=>div.remove(), 2600);
     }
 
-    // ===== Util fechas
-    function parseDTLocal(v){ return new Date(v).getTime(); }
-    function toDTLocalValue(ts){ const d=new Date(ts); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16); }
-
     // ===== Hero demo
     let demoEnd = Date.now()+75*1000;
     setInterval(()=>{
-      const d=Math.max(0, demoEnd-Date.now());
-      const s=Math.floor(d/1000);
-      const H=String(Math.floor(s/3600)).padStart(2,'0');
-      const M=String(Math.floor((s%3600)/60)).padStart(2,'0');
-      const S=String(s%60).padStart(2,'0');
-      $("countHero").textContent = `${H}:${M}:${S}`;
+      const d=Math.max(0, demoEnd-Date.now()), s=Math.floor(d/1000);
+      $("countHero").textContent = [s/3600|0, ((s%3600)/60|0), (s%60|0)].map(x=>String(x).padStart(2,'0')).join(":");
     },1000);
 
-    // ===== Crypt helpers (WebCrypto AES-GCM)
+    // ===== Notificaciones locales
+    async function askNotifPerm(){ try{ if(!("Notification" in window)) return false;
+      if(Notification.permission==="granted") return true;
+      const p = await Notification.requestPermission(); return p==="granted";
+    }catch{return false;}}
+    function scheduleLocalNotification(title, whenTs){
+      const delta = whenTs - Date.now();
+      if (delta>0 && delta<=2*60*1000 && "Notification" in window && Notification.permission==="granted") {
+        setTimeout(()=>{ new Notification("⏳ Cápsula lista", { body: `Ya podés abrir: ${title}` }); }, delta);
+      }
+    }
+
+    // ===== Crypto
     const enc = new TextEncoder(); const dec = new TextDecoder();
-    const b64 = {
-      to(b){ return btoa(String.fromCharCode(...new Uint8Array(b))); },
-      from(s){ return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
-    };
-    async function aesImportRaw(keyBytes){ return await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt","decrypt"]); }
-    async function aesGenKey(){ const k = crypto.getRandomValues(new Uint8Array(32)); return {raw:k, crypto: await aesImportRaw(k)}; }
+    const b64 = { to: b=>btoa(String.fromCharCode(...new Uint8Array(b))), from: s=>Uint8Array.from(atob(s), c=>c.charCodeAt(0)) };
+    async function aesImportRaw(raw){ return await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt","decrypt"]); }
+    async function aesGenKey(){ const raw = crypto.getRandomValues(new Uint8Array(32)); return { raw, crypto: await aesImportRaw(raw) }; }
     async function deriveFromPIN(pin, salt){
-      const base = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveBits","deriveKey"]);
-      const k = await crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:100000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, true, ["encrypt","decrypt"]);
-      const raw = new Uint8Array(await crypto.subtle.exportKey("raw", k));
+      const base = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveKey"]);
+      const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:100000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, true, ["encrypt","decrypt"]);
+      const raw = new Uint8Array(await crypto.subtle.exportKey("raw", key));
       return { raw, crypto: await aesImportRaw(raw) };
     }
-    async function aesEncrypt(keyCrypto, msg){
+    async function aesEncrypt(keyCrypto, text){
       const iv = crypto.getRandomValues(new Uint8Array(12));
-      const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, keyCrypto, enc.encode(msg));
+      const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, keyCrypto, enc.encode(text));
       return { iv, ct:new Uint8Array(ct) };
     }
     async function aesDecrypt(keyCrypto, iv, ct){
-      const p = await crypto.subtle.decrypt({name:"AES-GCM", iv}, keyCrypto, ct);
-      return dec.decode(p);
+      const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv}, keyCrypto, ct);
+      return dec.decode(pt);
     }
 
-    // ===== Clasificar & Embeds
+    // ===== Clasificar & embeds (YouTube, Vimeo, SoundCloud, Drive, Dropbox + data: URLs)
     function classifyLink(u){
       try{
-        const url=new URL(u), path=url.pathname.toLowerCase(), host=url.hostname.toLowerCase();
-        if (host.includes("youtube.com") || host.includes("youtu.be")) return {type:"youtube", url:u};
-        if (/\.(mp4|webm|ogv)(\?|#|$)/.test(path)) return {type:"video", url:u};
-        if (/\.(mp3|m4a|ogg|wav)(\?|#|$)/.test(path)) return {type:"audio", url:u};
-        if (/\.(png|jpg|jpeg|gif|webp|avif)(\?|#|$)/.test(path)) return {type:"image", url:u};
-        if (host.includes("drive.google.com")) return {type:"gdrive", url:u};
+        if (u.startsWith("data:")){
+          const mime = u.slice(5, u.indexOf(";"));
+          if (mime.startsWith("image/")) return {type:"image", url:u};
+          if (mime.startsWith("video/")) return {type:"video", url:u};
+          if (mime.startsWith("audio/")) return {type:"audio", url:u};
+          return {type:"file", url:u};
+        }
+        const url=new URL(u), p=url.pathname.toLowerCase(), h=url.hostname.toLowerCase();
+        if (h.includes("youtube") || h.includes("youtu.be")) return {type:"youtube", url:u};
+        if (h.includes("vimeo.com")) return {type:"vimeo", url:u};
+        if (h.includes("soundcloud.com")) return {type:"soundcloud", url:u};
+        if (h.includes("drive.google.com")) return {type:"gdrive", url:u};
+        if (h.includes("dropbox.com")) return {type:"dropbox", url:u};
+        if (/\.(mp4|webm|ogv)(\?|#|$)/.test(p)) return {type:"video", url:u};
+        if (/\.(mp3|m4a|ogg|wav)(\?|#|$)/.test(p)) return {type:"audio", url:u};
+        if (/\.(png|jpg|jpeg|gif|webp|avif)(\?|#|$)/.test(p)) return {type:"image", url:u};
         return {type:"link", url:u};
       }catch{ return {type:"link", url:u}; }
     }
     function renderEmbedHTML(item){
-      const {type, url} = item;
+      const {type,url}=item;
       if (type==="youtube"){
-        let vid=""; try{ const u=new URL(url); vid=u.hostname.includes("youtu.be")?u.pathname.slice(1):(u.searchParams.get("v")||""); }catch{}
-        if (vid) return `<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)"><iframe width="100%" height="360" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe></div>`;
+        let id=""; try{ const u=new URL(url); id=u.hostname.includes("youtu.be")?u.pathname.slice(1):(u.searchParams.get("v")||""); }catch{}
+        return id?`<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">
+          <iframe width="100%" height="360" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe></div>`:"";
+      }
+      if (type==="vimeo"){
+        const m=url.match(/vimeo\.com\/(\d+)/); const id=m?m[1]:"";
+        return id?`<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">
+          <iframe src="https://player.vimeo.com/video/${id}" width="100%" height="360" frameborder="0" allow="fullscreen"></iframe></div>`:"";
+      }
+      if (type==="soundcloud"){
+        return `<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">
+          <iframe width="100%" height="166" scrolling="no" frameborder="no"
+            src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%230ea5e9&auto_play=false"></iframe></div>`;
+      }
+      if (type==="gdrive"){
+        let id=""; try{
+          const u=new URL(url);
+          const m=u.pathname.match(/\/file\/d\/([^/]+)/); 
+          id = m? m[1] : (u.searchParams.get("id")||"");
+        }catch{}
+        if(!id) return `<a class="underline" style="color:var(--accent)" href="${url}" target="_blank">${url}</a>`;
+        return `<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">
+          <iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="420"></iframe></div>`;
+      }
+      if (type==="dropbox"){
+        let out=url.replace("dl=0","raw=1");
+        if (!out.includes("raw=1")) {
+          const u = new URL(url); u.searchParams.set("raw","1"); out = u.toString();
+        }
+        if (/\.(png|jpg|jpeg|gif|webp|avif)(\?|#|$)/i.test(out)) return `<img src="${out}" class="max-h-[420px] w-auto rounded-xl border" style="border-color:var(--border)"/>`;
+        if (/\.(mp4|webm|ogv)(\?|#|$)/i.test(out)) return `<video controls class="w-full rounded-xl border" style="background:var(--panel);border-color:var(--border)}"><source src="${out}"></video>`;
+        return `<a class="underline" style="color:var(--accent)" href="${out}" target="_blank">${url}</a>`;
       }
       if (type==="video") return `<video controls class="w-full rounded-xl border" style="background:var(--panel);border-color:var(--border)}"><source src="${url}"></video>`;
       if (type==="audio") return `<audio controls class="w-full"><source src="${url}"></audio>`;
-      if (type==="image") return `<img src="${url}" alt="Adjunto" class="max-h-[420px] w-auto rounded-xl border" style="border-color:var(--border)"/>`;
-      if (type==="gdrive"){
-        let iframe=""; try{ const u=new URL(url); let id=""; const m=u.pathname.match(/\/file\/d\/([^/]+)/); if(m) id=m[1]; else id=u.searchParams.get("id")||""; if(id) iframe=`<iframe src="https://drive.google.com/file/d/${id}/preview" width="100%" height="360" allow="autoplay"></iframe>`; }catch{}
-        return `<div class="space-y-2">${iframe?`<div class="rounded-xl overflow-hidden border" style="background:var(--panel);border-color:var(--border)">${iframe}</div>`:""}<a class="underline" style="color:var(--accent)" href="${url}" target="_blank">Ver en Drive</a></div>`;
-      }
-      return `<a class="underline" style="color:var(--accent)" target="_blank" href="${url}">${url}</a>`;
+      if (type==="image") return `<img src="${url}" class="max-h-[420px] w-auto rounded-xl border" style="border-color:var(--border)"/>`;
+      return `<a class="underline" style="color:var(--accent)" href="${url}" target="_blank">${url.slice(0,160)}</a>`;
+    }
+
+    // ===== Files UI + DataURL
+    const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB recomendado para Data URL
+    $("capFiles").addEventListener("change", ()=>{
+      const box = $("filePreview"); box.innerHTML="";
+      [...$("capFiles").files].forEach(f=>{
+        const tag = document.createElement("div");
+        tag.textContent = `${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
+        if (!storage && f.size > MAX_FILE_SIZE) tag.style.color = "#ef4444";
+        box.appendChild(tag);
+      });
+    });
+    function fileToDataURL(file){
+      return new Promise((res,rej)=>{
+        if (!storage && file.size > MAX_FILE_SIZE) return rej(new Error(`Archivo grande sin Firebase: ${file.name}`));
+        const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error("Error leyendo archivo")); r.readAsDataURL(file);
+      });
+    }
+
+    // Drag & drop
+    const dropZone = document.getElementById("dropZone");
+    dropZone.addEventListener("dragover",(e)=>{ e.preventDefault(); dropZone.style.opacity="0.8"; });
+    dropZone.addEventListener("dragleave",()=>{ dropZone.style.opacity="1"; });
+    dropZone.addEventListener("drop",(e)=>{
+      e.preventDefault(); dropZone.style.opacity="1";
+      const dtFiles = [...e.dataTransfer.files];
+      const input = document.getElementById("capFiles");
+      const dataTransfer = new DataTransfer();
+      [...input.files, ...dtFiles].forEach(f=>dataTransfer.items.add(f));
+      input.files = dataTransfer.files;
+      input.dispatchEvent(new Event("change"));
+    });
+
+    // ===== Firebase upload (si disponible)
+    async function uploadToFirebase(file, capsuleId){
+      const ref = storage.ref().child(`capsulas/${capsuleId}/${Date.now()}_${file.name}`);
+      await ref.put(file);
+      return await ref.getDownloadURL();
     }
 
     // ===== Local DB
@@ -377,83 +495,12 @@
     function load(){ try{ state.items = JSON.parse(localStorage.getItem(LSKEY)||"[]"); }catch{ state.items=[]; } }
     function save(){ localStorage.setItem(LSKEY, JSON.stringify(state.items)); }
 
-    // ===== QR/Compartir
-    function setQR(nodeId, text){
-      const node = $(nodeId); node.innerHTML="";
-      new QRCode(node,{ text, width:160, height:160, correctLevel:QRCode.CorrectLevel.H });
-    }
+    // ===== QR / compartir
+    function setQR(id, text){ const n=$(id); n.innerHTML=""; new QRCode(n,{text, width:160, height:160, correctLevel:QRCode.CorrectLevel.H}); }
+    function makeLinkPayload(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+    function parseLinkPayload(b64){ return JSON.parse(decodeURIComponent(escape(atob(b64)))) }
 
-    // ===== Link portable
-    function makeLinkPayload(obj){
-      const json = JSON.stringify(obj);
-      return btoa(unescape(encodeURIComponent(json))); // base64 en query
-    }
-    function parseLinkPayload(b64){
-      return JSON.parse(decodeURIComponent(escape(atob(b64))));
-    }
-
-    // ===== Crear cápsula (con cifrado)
-    async function createCapsule(){
-      const title=$("capTitle").value.trim();
-      const message=$("capMessage").value.trim();
-      const openStr=$("capOpen").value;
-      const pin=$("capPIN").value.trim();
-      const secMode=$("secMode").value; // link | pin
-      const links=($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean);
-      const geoR = parseInt(($("geoRadius").value||"").trim(),10);
-      if(!title||!message||!openStr) return toast("Completá título, mensaje y fecha.", false);
-      if(secMode==="pin" && (!/^\d{4,6}$/.test(pin))) return toast("PIN: 4–6 dígitos.", false);
-      const openAt=parseDTLocal(openStr);
-      if(!openAt || openAt < Date.now()+30*1000) return toast("La fecha debe ser ≥ 30s en el futuro.", false);
-
-      // crypto
-      let meta = { id: uid(), title, openAt, mode:secMode, links, createdAt: Date.now() };
-      let salt=null, keyRaw=null, keyCrypto=null, iv, ct;
-
-      if (secMode==="link"){
-        const k = await aesGenKey(); keyRaw=k.raw; keyCrypto=k.crypto;
-        const out = await aesEncrypt(keyCrypto, message); iv=out.iv; ct=out.ct;
-      } else {
-        salt = crypto.getRandomValues(new Uint8Array(16));
-        const k = await deriveFromPIN(pin, salt); keyRaw=k.raw; keyCrypto=k.crypto;
-        const out = await aesEncrypt(keyCrypto, message); iv=out.iv; ct=out.ct;
-      }
-
-      // geo
-      if (geoPos && geoR>0){
-        meta.geo = { lat: geoPos.lat, lon: geoPos.lon, r: geoR };
-      }
-
-      const payload = {
-        ...meta,
-        iv: b64.to(iv),
-        salt: salt ? b64.to(salt) : null,
-        ct: b64.to(ct)
-      };
-      const base = new URL(location.href); base.search=""; base.hash="";
-      base.searchParams.set("capsule", meta.id);
-      base.searchParams.set("data", makeLinkPayload(payload));
-      if (secMode==="link"){
-        // la clave solo en el fragment (no viaja en HTTP)
-        base.hash = "k="+b64.to(keyRaw);
-      }
-
-      const url=base.toString();
-      $("shareLink").value = url;
-      setQR("qrPreview", url);
-      $("copyLinkBtn").onclick=async()=>{ try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); } };
-      $("waBtn").onclick=()=>{ location.href=`https://wa.me/?text=${encodeURIComponent("Te dejo esta cápsula ✨ "+url)}`; };
-      $("tgBtn").onclick=()=>{ location.href=`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Te dejo esta cápsula ✨")}`; };
-      $("icsBtn").onclick=()=>downloadICS(meta);
-
-      // guardar listado local (no guarda el texto en claro)
-      state.items.unshift({ ...meta, likes:0, opens:0 });
-      save(); renderList(); toast("Cápsula creada. Enlace listo ✅");
-      // limpiar form
-      $("capTitle").value=""; $("capMessage").value=""; $("capPIN").value=""; $("capLinks").value="";
-    }
-
-    // ===== Geolocalización
+    // ===== Geoloc
     let geoPos=null;
     $("geoMark").onclick=()=>{
       const r = parseInt(($("geoRadius").value||"").trim(),10);
@@ -472,65 +519,131 @@
       return 2*R*Math.asin(Math.sqrt(a));
     }
 
-    // ===== Series (curso drip)
+    // ===== Crear cápsula
+    async function createCapsule(){
+      try{
+        const title=$("capTitle").value.trim();
+        const message=$("capMessage").value.trim();
+        const openStr=$("capOpen").value;
+        const pin=$("capPIN").value.trim();
+        const secMode=$("secMode").value;
+        const linksText=($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean);
+        if(!title||!message||!openStr) return toast("Completá título, mensaje y fecha.", false);
+        if(secMode==="pin" && !/^\d{4,6}$/.test(pin)) return toast("PIN: 4–6 dígitos.", false);
+        const openAt = new Date(openStr).getTime();
+        if(!openAt || openAt < Date.now()+30*1000) return toast("La fecha debe ser ≥ 30s en el futuro.", false);
+
+        // Notif local
+        await askNotifPerm();
+        scheduleLocalNotification(title, openAt);
+
+        // Archivos → URLs
+        const files = [...$("capFiles").files];
+        let fileLinks=[];
+        if (files.length){
+          if (storage){
+            const idTemp = uid();
+            fileLinks = await Promise.all(files.map(f=>uploadToFirebase(f, idTemp)));
+          } else {
+            fileLinks = await Promise.all(files.map(f=>fileToDataURL(f)));
+          }
+        }
+        const allLinks = [...fileLinks, ...linksText];
+
+        // Cifrado
+        let meta = { id: uid(), title, openAt, mode:secMode, createdAt:Date.now(), links:allLinks };
+        let salt=null, keyRaw=null, keyCrypto=null, iv, ct;
+
+        if (secMode==="link"){
+          const k = await aesGenKey(); keyRaw=k.raw; keyCrypto=k.crypto;
+          const out = await aesEncrypt(keyCrypto, message); iv=out.iv; ct=out.ct;
+        } else {
+          salt = crypto.getRandomValues(new Uint8Array(16));
+          const k = await deriveFromPIN(pin, salt); keyRaw=k.raw; keyCrypto=k.crypto;
+          const out = await aesEncrypt(keyCrypto, message); iv=out.iv; ct=out.ct;
+        }
+
+        if (geoPos && parseInt(($("geoRadius").value||"0"),10)>0){
+          meta.geo = { lat: geoPos.lat, lon: geoPos.lon, r: parseInt($("geoRadius").value,10) };
+        }
+
+        const payload = { ...meta, iv:b64.to(iv), salt: salt? b64.to(salt): null, ct: b64.to(ct) };
+        const base = new URL(location.href); base.search=""; base.hash="";
+        base.searchParams.set("capsule", meta.id);
+        base.searchParams.set("data", makeLinkPayload(payload));
+        if (secMode==="link"){ base.hash = "k="+b64.to(keyRaw); } // clave sólo en fragment
+
+        const url = base.toString();
+        $("shareLink").value = url; setQR("qrPreview", url);
+
+        // Share
+        $("copyLinkBtn").onclick=async()=>{ try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); } };
+        $("waBtn").onclick=()=>{ const txt=`Te dejo esta cápsula ✨ ${url}`; window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,"_blank"); };
+        $("tgBtn").onclick=()=>{ window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Te dejo esta cápsula ✨")}`,"_blank"); };
+        $("mailBtn").onclick=()=>{ location.href=`mailto:?subject=${encodeURIComponent("Cápsula para vos ✨")}&body=${encodeURIComponent("Te dejo esta cápsula:\n"+url)}`; };
+        $("nativeBtn").onclick=async()=>{ if(navigator.share){ try{ await navigator.share({ title:"Cápsula", text:"Te dejo esta cápsula ✨", url }); }catch{} } else toast("Compartir nativo no disponible", false); };
+        $("icsBtn").onclick=()=>downloadICS(meta);
+
+        // Guardado local de meta
+        state.items.unshift({ ...meta, likes:0, opens:0 }); save(); renderList();
+
+        // limpiar UI
+        $("capTitle").value=""; $("capMessage").value=""; $("capPIN").value=""; $("capLinks").value="";
+        $("capFiles").value=""; $("filePreview").innerHTML="";
+        toast("Cápsula creada. ¡Compartí por link/QR/WhatsApp/Telegram! ✅");
+      }catch(e){
+        console.error(e);
+        toast(e.message || "No se pudo crear la cápsula", false);
+      }
+    }
+
+    // ===== Series
     $("seriesBtn").onclick=()=>{
       const n=parseInt(($("seriesN").value||"0"),10);
       const step=parseInt(($("seriesStep").value||"0"),10);
       const baseStr=$("capOpen").value;
       if(!n||!step||!baseStr) return toast("Completá cantidad, intervalo y fecha base.", false);
-      const base=parseDTLocal(baseStr);
+      const base=new Date(baseStr).getTime();
       for(let i=0;i<n;i++){
-        const t = base + (i*step*24*60*60*1000);
+        const t = base + i*step*24*60*60*1000;
         state.items.unshift({ id:uid(), title:`${$("capTitle").value.trim()||"Clase"} #${i+1}`, openAt:t, mode:$("secMode").value, links:[], createdAt:Date.now(), likes:0, opens:0 });
       }
       save(); renderList(); toast("Serie generada ✅");
     };
 
-    // ===== Presets
+    // ===== Presets 1-tap
     document.querySelectorAll('[data-preset]').forEach(b=>{
       b.onclick=()=>{
         const p=b.dataset.preset, now=Date.now();
         if(p==="birthday"){
-          $("capTitle").value="Feliz cumple 🎂 (abre a las 00:00)";
-          $("capMessage").value="¡Feliz cumple! 💫 Te preparé este mensaje.";
-          const d=new Date(now+24*60*60*1000); d.setHours(0,0,0,0);
-          $("capOpen").value = toDTLocalValue(d.getTime());
-          $("secMode").value="link";
+          setForm("Feliz cumple 🎂 (00:00)","¡Feliz cumple! 💫 Te preparé este mensaje.", toLocal(nextMidnight()), "link");
         } else if(p==="premiere"){
-          $("capTitle").value="Estreno del video 🎬";
-          $("capMessage").value="¡Gracias por activar la campanita! Abrí durante el estreno.";
-          $("capLinks").value="https://youtube.com/watch?v=VIDEO_ID";
-          $("capOpen").value = toDTLocalValue(now+60*60*1000);
-          $("secMode").value="link";
+          setForm("Estreno del video 🎬","Abrí durante el estreno.", toLocal(now+60*60*1000), "link", "https://youtube.com/watch?v=VIDEO_ID");
         } else if(p==="course"){
-          $("capTitle").value="Curso drip — Clase 1";
-          $("capMessage").value="Bienvenido/a al curso. Mañana llega la Clase 2 😉";
-          $("capOpen").value = toDTLocalValue(now+5*60*1000);
+          setForm("Curso drip — Clase 1","Bienvenido/a al curso. Mañana llega la Clase 2 😉", toLocal(now+5*60*1000), "pin");
           $("seriesN").value="5"; $("seriesStep").value="1";
-          $("secMode").value="pin";
         } else if(p==="gift"){
-          $("capTitle").value="Regalo del creador 🎁";
-          $("capMessage").value="Gracias por seguirme. Abrí y reclamá tu sorpresa.";
-          $("capOpen").value = toDTLocalValue(now+2*60*60*1000);
-          $("secMode").value="link";
+          setForm("Regalo del creador 🎁","Gracias por seguirme. Abrí y reclamá tu sorpresa.", toLocal(now+2*60*60*1000), "link");
         }
         toast("Preset cargado ✅");
       };
     });
+    function setForm(t,m,dt,mode,links=""){ $("capTitle").value=t; $("capMessage").value=m; $("capOpen").value=dt; $("secMode").value=mode; $("capLinks").value=links; }
+    function nextMidnight(){ const d=new Date(Date.now()+24*60*60*1000); d.setHours(0,0,0,0); return d.getTime(); }
 
-    // ===== Listado + ranking
+    // ===== Listado
     $("search").addEventListener("input", renderList);
     function renderList(){
       const box=$("myList"); box.innerHTML="";
       const q=($("search").value||"").toLowerCase();
       const items=state.items.filter(c=> (c.title||"").toLowerCase().includes(q));
-      if(!items.length){ box.innerHTML=`<div class="p-4 glass card">No hay cápsulas.</div>`; $("topList").innerHTML=""; return; }
+      if(!items.length){ box.innerHTML=`<div class="p-4 glass card">No hay cápsulas.</div>`; return; }
       items.forEach(c=>{
         const card=document.createElement("div"); card.className="p-4 glass card border"; card.style.borderColor="var(--border)";
         const eta = c.openAt > Date.now() ? new Date(c.openAt).toLocaleString() : "¡Lista!";
         card.innerHTML=`
           <div class="flex items-center justify-between">
-            <div class="pill">E2EE • ${c.mode==="pin"?"PIN":"Link secreto"}</div>
+            <div class="pill">E2EE • ${c.mode==="pin"?"PIN":"Link #k"}</div>
             <div class="text-xs" style="color:var(--muted)">${new Date(c.createdAt).toLocaleString()}</div>
           </div>
           <div class="mt-1 text-lg font-bold" style="color:var(--accent)">${c.title}</div>
@@ -538,76 +651,48 @@
           <div class="mt-2 text-xs" style="color:var(--muted)">Likes: ${c.likes||0} · Aperturas: ${c.opens||0}</div>
           <div class="mt-3 flex flex-wrap gap-2">
             <button class="btn btn-primary" data-act="view">Abrir / Vista</button>
-            <button class="btn" data-act="copy">Copiar link</button>
-            <button class="btn" data-act="wa">WhatsApp</button>
-            <button class="btn" data-act="tg">Telegram</button>
+            <button class="btn" data-act="share">Compartir</button>
             <button class="btn" data-act="del">Eliminar</button>
           </div>`;
-        card.querySelector('[data-act="view"]').onclick=()=>openViewerFromCard(c);
-        card.querySelector('[data-act="copy"]').onclick=async()=>{
-          const url = makeShareURLFromMeta(c);
-          try{ await navigator.clipboard.writeText(url); toast("Enlace copiado ✅"); }catch{ prompt("Copiá manualmente:", url); }
-        };
-        card.querySelector('[data-act="wa"]').onclick=()=>{ const url=makeShareURLFromMeta(c); location.href=`https://wa.me/?text=${encodeURIComponent("Te dejo esta cápsula ✨ "+url)}`; };
-        card.querySelector('[data-act="tg"]').onclick=()=>{ const url=makeShareURLFromMeta(c); location.href=`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Te dejo esta cápsula ✨")}`; };
-        card.querySelector('[data-act="del"]').onclick=()=>{
-          if(confirm("¿Eliminar esta cápsula?")){ state.items = state.items.filter(x=>x.id!==c.id); save(); renderList(); toast("Eliminada"); }
-        };
+        card.querySelector('[data-act="view"]').onclick=()=>openViewerFromMeta(c);
+        card.querySelector('[data-act="share"]').onclick=()=>shareFromMeta(c);
+        card.querySelector('[data-act="del"]').onclick=()=>{ if(confirm("¿Eliminar?")){ state.items = state.items.filter(x=>x.id!==c.id); save(); renderList(); } };
         box.appendChild(card);
       });
-      // Top
-      const top = [...state.items].sort((a,b)=>(b.likes||0)+(b.opens||0)-(a.likes||0)-(a.opens||0)).slice(0,6);
-      $("topList").innerHTML = top.map(c=>`<div class="glass card p-3 border" style="border-color:var(--border)">
-        <div class="text-sm font-bold" style="color:var(--accent)">${c.title}</div>
-        <div class="text-xs" style="color:var(--muted)">Likes ${c.likes||0} · Opens ${c.opens||0}</div>
-        <button class="btn mt-2" onclick="location.href='${makeShareURLFromMeta(c)}'">Compartir</button>
-      </div>`).join("");
     }
 
-    // Construir link compartible desde meta (sin el mensaje, pero válido si era de modo link? -> mostramos aviso)
-    function makeShareURLFromMeta(meta){
-      // Sin el texto cifrado no tiene contenido (porque el mensaje no se guarda local en claro).
-      // Generamos un link informativo que apunta a esta misma página con sólo el título, para que pida el original.
-      const payload = { id:meta.id, title:meta.title, openAt:meta.openAt, mode:meta.mode, links:meta.links||[], iv:null, salt:null, ct:null, ghost:true };
-      const base = new URL(location.href); base.search=""; base.hash="";
-      base.searchParams.set("capsule", meta.id);
-      base.searchParams.set("data", makeLinkPayload(payload));
-      return base.toString();
+    function shareFromMeta(meta){
+      // Enlace informativo (sin texto) — el real se genera al crear.
+      const payload = { ...meta, iv:null, salt:null, ct:null, ghost:true };
+      const u = new URL(location.href); u.search=""; u.hash=""; u.searchParams.set("capsule", meta.id); u.searchParams.set("data", makeLinkPayload(payload));
+      const url = u.toString();
+      if(navigator.share){ navigator.share({ title:meta.title, text:"Te dejo esta cápsula ✨", url }).catch(()=>{}); }
+      else prompt("Copiá este enlace:", url);
     }
 
-    // ===== Viewer (abrir desde card con datos locales -> sólo meta; requiere link real para descifrar)
-    function openViewerFromCard(meta){
-      const p = new URLSearchParams(location.search);
-      let data = p.get("data"); // si hay en URL actual, úsalo
-      if(!data){
-        alert("Usá el enlace generado al crear para abrir con contenido cifrado.\nDesde el listado local sólo ves meta.");
-        return;
-      }
+    // ===== Viewer
+    function openViewerFromMeta(meta){
+      const sp=new URLSearchParams(location.search); const data=sp.get("data");
+      if(!data){ alert("Abrí con el enlace generado al crear (incluye el contenido cifrado)."); return; }
       openViewer(data, location.hash);
     }
-
-    // ===== Viewer (desde deep link real)
     function openViewer(dataB64, hash){
       const payload = parseLinkPayload(dataB64);
       $("modal").classList.remove("hidden");
       $("mTitle").textContent=payload.title||"Cápsula";
-      $("mPrivacy").textContent="E2EE • "+(payload.mode==="pin"?"PIN":"Link secreto");
+      $("mPrivacy").textContent="E2EE • "+(payload.mode==="pin"?"PIN":"Link #k");
 
       // countdown
-      function tick(){
-        const d=Math.max(0, (payload.openAt||0)-Date.now());
-        const s=Math.floor(d/1000);
-        const H=String(Math.floor(s/3600)).padStart(2,'0');
-        const M=String(Math.floor((s%3600)/60)).padStart(2,'0');
-        const S=String(s%60).padStart(2,'0');
-        $("mCountdown").textContent=d>0?`${H}:${M}:${S}`:"00:00:00";
-        if(d<=0){ $("mOpen").classList.remove("hidden"); clearInterval(tmr); }
-      }
+      const tick=()=>{
+        const d=Math.max(0,(payload.openAt||0)-Date.now()), s=Math.floor(d/1000);
+        $("mCountdown").textContent=[s/3600|0, ((s%3600)/60|0), (s%60|0)].map(x=>String(x).padStart(2,'0')).join(":");
+        if(d<=0) $("mOpen").classList.remove("hidden");
+      };
       const tmr=setInterval(tick,1000); tick();
 
-      // geolock?
+      // geo
       let geoOK=true;
-      if (payload.geo){
+      if(payload.geo){
         $("mGEOWrap").classList.remove("hidden");
         $("geoCheck").onclick=()=>{
           if(!navigator.geolocation){ $("geoResult").textContent="Geolocalización no disponible"; geoOK=false; return; }
@@ -619,16 +704,15 @@
         };
       }
 
-      // PIN?
       $("mPINwrap").classList.toggle("hidden", payload.mode!=="pin");
 
       $("mOpen").onclick=async ()=>{
-        if(!geoOK && payload.geo){ toast("Tenés que estar en la ubicación.", false); return; }
-        // Descifrar
+        if(payload.openAt> Date.now()) return;
+        if(payload.geo && !geoOK){ toast("Tenés que estar en la ubicación.", false); return; }
         try{
           let keyCrypto=null;
-          const iv = b64.from(payload.iv||"");
-          const ct = b64.from(payload.ct||"");
+          const iv = payload.iv? b64.from(payload.iv): null;
+          const ct = payload.ct? b64.from(payload.ct): null;
           if(payload.mode==="link"){
             const h = new URLSearchParams((hash||"").replace(/^#/, ""));
             const k = h.get("k"); if(!k){ toast("Falta clave (#k) en el link", false); return; }
@@ -640,33 +724,23 @@
             const salt = b64.from(payload.salt||"");
             keyCrypto = (await deriveFromPIN(pin, salt)).crypto;
           }
-          const msg = await aesDecrypt(keyCrypto, iv, ct);
-          // Open UI
+          const msg = ct? await aesDecrypt(keyCrypto, iv, ct) : "(vista previa)";
           $("mChestWrap").classList.add("hidden");
           $("mContent").classList.remove("hidden");
           $("mMessage").textContent = msg;
           $("mLinks").innerHTML = (payload.links||[]).map(u=>renderEmbedHTML(classifyLink(u))).join("");
           confetti({ particleCount:240, spread:70, origin:{ y:0.6 } });
 
-          // métricas locales
           incrOpen(payload.id);
-          // likes
           $("likeCount").textContent = getLikes(payload.id);
           $("likeBtn").onclick=()=>{ const v=incrLike(payload.id); $("likeCount").textContent=v; };
-
-          // comentarios
           renderComments(payload.id);
           $("cSend").onclick=()=>sendComment(payload.id);
-
-          // certificado
           $("certBtn").onclick=()=>downloadCertificate(payload.title);
-        }catch(e){
-          console.error(e);
-          toast("No se pudo descifrar. Verificá clave/PIN.", false);
-        }
+        }catch(e){ console.error(e); toast("No se pudo descifrar. Verificá clave/PIN.", false); }
       };
 
-      $("mClose").onclick=()=>{ $("modal").classList.add("hidden"); };
+      $("mClose").onclick=()=>{ $("modal").classList.add("hidden"); clearInterval(tmr); };
     }
 
     // ===== Likes & opens
@@ -699,7 +773,7 @@ UID:${meta.id}
 DTSTAMP:${dt}
 DTSTART:${dt}
 SUMMARY:${meta.title.replace(/[\n\r]/g," ")}
-DESCRIPTION:Capsula programada
+DESCRIPTION:Cápsula programada
 END:VEVENT
 END:VCALENDAR`.trim();
       const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
@@ -709,68 +783,43 @@ END:VCALENDAR`.trim();
     // ===== Certificado PNG
     function downloadCertificate(title){
       const c=document.createElement("canvas"); c.width=1200; c.height=630; const ctx=c.getContext("2d");
-      // fondo
-      const g=ctx.createLinearGradient(0,0,c.width,c.height);
-      g.addColorStop(0,"#0ea5e9"); g.addColorStop(1,"#6366f1"); ctx.fillStyle=g; ctx.fillRect(0,0,c.width,c.height);
-      // marco
+      const g=ctx.createLinearGradient(0,0,c.width,c.height); g.addColorStop(0,"#0ea5e9"); g.addColorStop(1,"#6366f1"); ctx.fillStyle=g; ctx.fillRect(0,0,c.width,c.height);
       ctx.strokeStyle="rgba(255,255,255,.6)"; ctx.lineWidth=8; ctx.strokeRect(24,24,c.width-48,c.height-48);
       ctx.fillStyle="#fff"; ctx.font="bold 56px Inter"; ctx.fillText("Certificado de apertura", 80, 150);
       ctx.font="28px Inter"; ctx.fillText("Cápsula:", 80, 220);
-      wrapText(ctx, title, 200, 220, 980, 34);
+      wrap(title, 200, 220, 980, 34);
       ctx.font="24px Inter"; ctx.fillText("Fecha:", 80, 300);
       ctx.fillText(new Date().toLocaleString(), 160, 300);
       ctx.font="24px Inter"; ctx.fillText("Emitido por Cápsula Volver al Futuro", 80, 360);
       const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download="certificado_apertura.png"; a.click();
-      function wrapText(ctx, text, x, y, maxW, lh){
+      function wrap(text, x, y, maxW, lh){
         const words=text.split(" "); let line="";
         for(let n=0; n<words.length; n++){
           const test=line+words[n]+" "; const w=ctx.measureText(test).width;
           if(w>maxW && n>0){ ctx.fillText(line, x, y); line=words[n]+" "; y+=lh; } else line=test;
-        }
-        ctx.fillText(line, x, y);
+        } ctx.fillText(line, x, y);
       }
     }
 
-    // ===== Deep link
-    function checkDeepLink(){
-      const p=new URLSearchParams(location.search);
-      const data=p.get("data"); if(!data) return;
-      openViewer(data, location.hash);
-    }
+    // ===== Init deep link + defaults
+    (function init(){
+      const dt = new Date(Date.now()+60000); $("capOpen").value = toLocal(dt.getTime());
+      load(); renderList();
+      const sp=new URLSearchParams(location.search); const data=sp.get("data");
+      if(data) openViewer(data, location.hash);
+    })();
 
-    // ===== Feedback app
-    $("appSend").onclick=()=>{
-      const r=Number($("appRate").value), t=$("appComment").value.trim();
-      const arr=JSON.parse(localStorage.getItem("cvf_app_feedback")||"[]"); arr.unshift({r,t,ts:Date.now()});
-      localStorage.setItem("cvf_app_feedback", JSON.stringify(arr)); $("appComment").value="";
-      renderAppWall(); toast("¡Gracias por tu feedback! ✅");
-    };
-    function renderAppWall(){
-      const arr=JSON.parse(localStorage.getItem("cvf_app_feedback")||"[]");
-      $("appWall").innerHTML = arr.slice(0,10).map(x=>`<div class="glass card p-3 border" style="border-color:var(--border)">
-        <div>${"⭐️".repeat(x.r)}</div>
-        <div class="text-sm mt-1">${x.t||""}</div>
-        <div class="text-xs opacity-70 mt-1">${new Date(x.ts).toLocaleString()}</div>
-      </div>`).join("");
-    }
-
-    // ===== Helpers
-    function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
-
-    // ===== Eventos UI
+    // ===== Hooks UI
     $("btnCreate").onclick=()=>createCapsule();
     $("btnPreview").onclick=()=>{
-      // Previsualiza sin cifrado real (sólo UI)
       const meta={ id:"PREV", title:$("capTitle").value||"Cápsula", openAt:Date.now()+3000, mode:$("secMode").value, links:($("capLinks").value||"").split(",").map(s=>s.trim()).filter(Boolean) };
       const fake = makeLinkPayload({ ...meta, iv:"", salt:"", ct:"", ghost:true });
       openViewer(fake, "");
     };
 
-    // Defaults
-    (function init(){
-      const dt = new Date(Date.now()+60000); $("capOpen").value = toDTLocalValue(dt.getTime());
-      load(); renderList(); renderAppWall(); checkDeepLink();
-    })();
+    // ==== utils
+    function toLocal(ts){ const d=new Date(ts); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16); }
+    function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
   })();
   </script>
 </body>
