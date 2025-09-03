@@ -1,25 +1,72 @@
-const CACHE = "cvf-v1";
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./grok_image_qtfpp7.jpg",
-  "./manifest.webmanifest"
+/* sw.js – Cápsula Volver al Futuro 2.0
+   Estrategia:
+   - Precarga mínimo same-origin (index, manifest, logo).
+   - Runtime cache "network-first" para HTML.
+   - "stale-while-revalidate" simple para assets same-origin.
+   Nota: CDNs (Tailwind, QRCode, LZString, confetti) se dejan pasar a red (CORS).
+*/
+const VERSION = 'v1.0.0';
+const CACHE_STATIC = `capsula-static-${VERSION}`;
+const STATIC_ASSETS = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './grok_image_qtfpp7.jpg'
 ];
-// Cache first, network fallback (+ put en cache)
-self.addEventListener("install", e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE_STATIC).then((cache) => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
-self.addEventListener("activate", e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE && caches.delete(k)))));
-  self.clients.claim();
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => (k.startsWith('capsula-') && k !== CACHE_STATIC) ? caches.delete(k) : null))
+    ).then(() => self.clients.claim())
+  );
 });
-self.addEventListener("fetch", e=>{
-  const req = e.request;
+
+self.addEventListener('fetch', (e) => {
+  const { request } = e;
+  const url = new URL(request.url);
+
+  // Sólo manejamos GET
+  if (request.method !== 'GET') return;
+
+  // HTML -> network-first (para no quedar desactualizado)
+  if (request.destination === 'document' || request.headers.get('accept')?.includes('text/html')) {
+    e.respondWith(
+      fetch(request)
+        .then((res) => {
+          const respClone = res.clone();
+          caches.open(CACHE_STATIC).then(cache => cache.put(request, respClone));
+          return res;
+        })
+        .catch(() => caches.match(request).then(res => res || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Same-origin assets -> cache-first, luego red (stale-while-revalidate simple)
+  if (url.origin === self.location.origin) {
+    e.respondWith(
+      caches.match(request).then((cached) => {
+        const network = fetch(request).then((res) => {
+          const respClone = res.clone();
+          caches.open(CACHE_STATIC).then(cache => cache.put(request, respClone));
+          return res;
+        }).catch(() => cached);
+        return cached || network;
+      })
+    );
+    return;
+  }
+
+  // Externos (CDNs) -> network fallback a cache si existe (poco probable por CORS)
   e.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(res=>{
-      try{ const copy=res.clone(); caches.open(CACHE).then(c=>c.put(req, copy)); }catch{}
-      return res;
-    }).catch(()=> cached))
+    fetch(request).catch(() => caches.match(request))
   );
 });
